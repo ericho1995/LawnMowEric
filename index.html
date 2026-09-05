@@ -361,11 +361,19 @@
   .lead-notes { margin-top: 10px; font-size: 0.88rem; color: var(--text-muted); font-style: italic; }
   .status-select { font-weight: 700; }
   .status-New { color: var(--accent); }
-  .status-Contacted { color: #B98800; }
+  .status-Contacted { color: #8A6600; }
   .status-Scheduled { color: var(--primary-dark); }
   .status-Completed { color: var(--text-muted); }
   .admin-note { font-size: 0.82rem; color: var(--text-muted); margin-top: 22px; }
   .back-link { font-size: 0.9rem; font-weight: 700; color: var(--primary-dark); text-decoration: none; }
+  .admin-gate {
+    max-width: 360px; margin: 60px auto; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 28px; text-align: center;
+  }
+  .admin-gate p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 16px; }
+  .admin-gate form { display: flex; flex-direction: column; gap: 12px; }
+  .admin-gate .gate-error { color: var(--accent); font-size: 0.85rem; min-height: 1.2em; }
 </style>
 
 <div id="public-view">
@@ -392,7 +400,7 @@
     <div>
       <span class="eyebrow">🌱 Now booking in Melbourne</span>
       <h1>Your lawn, mowed by someone who actually shows up.</h1>
-      <p class="lede">Tell us about your lawn, get a straightforward quote, and pick a day. A vetted local mower — often Eric himself — takes it from there.</p>
+      <p class="lede">Tell us about your lawn, get a straightforward quote, and pick a day. Eric picks up every job personally while MowMate is just getting started.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#quote">Get my free quote</a>
         <a class="btn btn-ghost" href="#how" style="color:#fff;border-color:rgba(255,255,255,0.55)">See how it works</a>
@@ -491,14 +499,11 @@
         </div>
       </div>
       <div class="area-col">
-        <h3><span class="soon-dot"></span> Coming soon — Sydney</h3>
+        <h3><span class="soon-dot"></span> Sydney — on the roadmap</h3>
         <div class="chip-list">
-          <span class="chip soon">Inner West</span>
-          <span class="chip soon">Eastern Suburbs</span>
-          <span class="chip soon">North Shore</span>
-          <span class="chip soon">Inner City</span>
+          <span class="chip soon">Timeline not yet set</span>
         </div>
-        <p style="margin-top:16px;color:var(--text-muted);font-size:0.9rem;">Not in Melbourne? Pop your suburb in the notes field below and we'll reach out when Sydney opens.</p>
+        <p style="margin-top:16px;color:var(--text-muted);font-size:0.9rem;">Not in Melbourne? Pop your suburb in the notes field below and we'll reach out once Sydney opens — no date locked in yet.</p>
       </div>
     </div>
   </div>
@@ -569,14 +574,14 @@
           </div>
         </div>
         <div class="form-foot">
-          <span class="form-note">We'll only use these details to quote and book your mow.</span>
+          <span class="form-note">We'll only use these details to quote and book your mow — never shared or sold.</span>
           <div style="display:flex;align-items:center;gap:14px;">
-            <span id="quote-status"></span>
+            <span id="quote-status" role="status" aria-live="polite"></span>
             <button class="btn btn-primary" type="submit" id="quote-submit">Send my request</button>
           </div>
         </div>
       </form>
-      <div class="success-panel" id="quote-success" style="display:none;">
+      <div class="success-panel" id="quote-success" style="display:none;" role="status" aria-live="polite">
         <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>Request received, <span id="success-name">there</span>.</h3>
         <p>We'll be in touch within one business day with a quote and a suggested date.</p>
@@ -594,15 +599,15 @@
     <div class="trust-grid">
       <div class="trust-card">
         <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-        <div><h3>Insured &amp; vetted</h3><p>Every mower on a job is insured and identity-checked before they're sent to your door.</p></div>
+        <div><h3>You know who's coming</h3><p>Right now every job is done by Eric in person — no unknown subcontractor turning up. As MowMate grows, every added mower will be insured and checked before they're sent out.</p></div>
       </div>
       <div class="trust-card">
         <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div><h3>Satisfaction guarantee</h3><p>Not happy with the mow? Tell us within 24 hours and we'll come back and make it right.</p></div>
+        <div><h3>Not happy? Say so</h3><p>Let us know within 24 hours of the mow and we'll talk about making it right.</p></div>
       </div>
       <div class="trust-card">
         <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5.5c0-1.7-2.2-2.5-5-2.5S7 3.8 7 5.5 9.2 8 12 8s5 .8 5 2.5-2.2 2.5-5 2.5-5-.8-5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-        <div><h3>Simple, flat pricing</h3><p>Priced on size and frequency, quoted up front — no surprise fees on the invoice.</p></div>
+        <div><h3>Clear pricing, no surprises</h3><p>Priced on your lawn's size and how often you want it mowed, confirmed before you book — never a surprise fee on the invoice.</p></div>
       </div>
     </div>
   </div>
@@ -621,7 +626,7 @@
     </div>
     <div class="footer-fine">
       <span>© 2026 MowMate · Melbourne, VIC</span>
-      <a href="?admin">Business login</a>
+      <a href="?admin">Admin (private link)</a>
     </div>
   </div>
 </footer>
@@ -636,13 +641,30 @@
         <h1>Job queue</h1>
       </div>
     </div>
-    <div id="admin-list"></div>
-    <p class="admin-note">This is the Phase 1 admin view: every quote request lands here so you can call and quote manually, and track it through to completion. Assigning jobs to other mowers is scoped as Phase 3 in the requirements doc.</p>
+    <div id="admin-gate" class="admin-gate">
+      <h3 style="margin-bottom:10px;">Private area</h3>
+      <p>This is a stopgap passphrase, not real login security — anyone with the passphrase (or access to this file) can get in. Treat this link as private and don't post it publicly until Phase 2 adds real accounts.</p>
+      <form id="admin-gate-form">
+        <input type="password" id="admin-gate-input" placeholder="Passphrase" autocomplete="off">
+        <button class="btn btn-primary btn-block" type="submit">Enter</button>
+        <span class="gate-error" id="admin-gate-error"></span>
+      </form>
+    </div>
+    <div id="admin-content" style="display:none;">
+      <div id="admin-list"></div>
+      <p class="admin-note">This is the Phase 1 admin view: every quote request lands here so you can call and quote manually, and track it through to completion. Assigning jobs to other mowers is scoped as Phase 3 in the requirements doc.</p>
+    </div>
   </div>
 </div>
 
 <script>
 (function () {
+  const STATUS_VALUES = ['New', 'Contacted', 'Scheduled', 'Completed'];
+  // Stopgap only — not real auth. Anyone who reads this file's source sees the
+  // passphrase. It exists purely so the admin view isn't wide open to a casual
+  // click on the footer link. Replace with real accounts in Phase 2.
+  const ADMIN_PASSPHRASE = 'mowmate-admin';
+
   const isAdmin = new URLSearchParams(location.search).has('admin');
   const publicView = document.getElementById('public-view');
   const adminView = document.getElementById('admin-view');
@@ -660,21 +682,54 @@
       db = await window.claude.use('db');
       if (db) quotesCol = db.collection('quotes');
     } catch (e) { db = null; }
-    if (isAdmin) {
-      if (quotesCol) {
-        subscribeAdmin();
-      } else {
-        document.getElementById('admin-list').innerHTML =
-          '<div class="admin-empty">Job queue data isn\'t available in this view — open this page from your Claude account to see live submissions.</div>';
-      }
+  }
+
+  function startAdminData() {
+    if (quotesCol) {
+      subscribeAdmin();
+    } else {
+      document.getElementById('admin-list').innerHTML =
+        '<div class="admin-empty">Job queue data isn\'t available in this view — open this page from your Claude account to see live submissions.</div>';
     }
   }
-  initDb();
+
+  if (isAdmin) {
+    const gate = document.getElementById('admin-gate');
+    const content = document.getElementById('admin-content');
+    const gateForm = document.getElementById('admin-gate-form');
+    const gateInput = document.getElementById('admin-gate-input');
+    const gateError = document.getElementById('admin-gate-error');
+
+    function unlockAdmin() {
+      gate.style.display = 'none';
+      content.style.display = 'block';
+      initDb().catch(function () {}).then(startAdminData);
+    }
+
+    if (sessionStorage.getItem('mowmate_admin_ok') === '1') {
+      unlockAdmin();
+    } else {
+      gateForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (gateInput.value === ADMIN_PASSPHRASE) {
+          sessionStorage.setItem('mowmate_admin_ok', '1');
+          unlockAdmin();
+        } else {
+          gateError.textContent = 'That passphrase isn\'t right.';
+          gateInput.value = '';
+          gateInput.focus();
+        }
+      });
+    }
+  } else {
+    initDb().catch(function () {});
+  }
 
   // ---- Public quote form ----
   const form = document.getElementById('quote-form');
   const statusEl = document.getElementById('quote-status');
   const successPanel = document.getElementById('quote-success');
+  let fallbackLink = null;
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -683,6 +738,7 @@
     submitBtn.disabled = true;
     statusEl.dataset.state = '';
     statusEl.textContent = 'Sending…';
+    if (fallbackLink) { fallbackLink.remove(); fallbackLink = null; }
 
     if (!quotesCol) {
       // capability unavailable — offer an email fallback rather than pretending it saved
@@ -691,12 +747,12 @@
       const body = encodeURIComponent(
         `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSuburb: ${data.suburb}\nLawn size: ${data.size}\nFrequency: ${data.frequency}\nPreferred day: ${data.day}\nExtras: ${data.extras || '-'}\nNotes: ${data.notes || '-'}`
       );
-      const mailLink = document.createElement('a');
-      mailLink.href = `mailto:hello@mowmate.com.au?subject=Quote request&body=${body}`;
-      mailLink.textContent = 'Open email draft';
-      mailLink.className = 'btn btn-ghost';
-      mailLink.style.marginLeft = '10px';
-      statusEl.after(mailLink);
+      fallbackLink = document.createElement('a');
+      fallbackLink.href = `mailto:ericho995@gmail.com?subject=MowMate quote request&body=${body}`;
+      fallbackLink.textContent = 'Open email draft';
+      fallbackLink.className = 'btn btn-ghost';
+      fallbackLink.style.marginLeft = '10px';
+      statusEl.after(fallbackLink);
       submitBtn.disabled = false;
       return;
     }
@@ -728,6 +784,8 @@
       listEl.innerHTML = '';
       snap.docs.forEach(function (doc) {
         const d = doc.data();
+        const safeId = escapeHtml(doc.id);
+        const safeStatus = STATUS_VALUES.includes(d.status) ? d.status : 'New';
         const card = document.createElement('div');
         card.className = 'lead-card';
         const when = d.createdAt ? new Date(d.createdAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' }) : '';
@@ -744,9 +802,9 @@
             ${d.notes ? `<div class="lead-notes">"${escapeHtml(d.notes)}"</div>` : ''}
           </div>
           <div>
-            <label style="font-size:0.8rem;font-weight:700;color:var(--text-muted);">Status</label>
-            <select class="status-select status-${d.status || 'New'}" data-id="${doc.id}">
-              ${['New','Contacted','Scheduled','Completed'].map(s => `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+            <label for="status-${safeId}" style="font-size:0.8rem;font-weight:700;color:var(--text-muted);">Status</label>
+            <select id="status-${safeId}" class="status-select status-${safeStatus}" data-id="${safeId}">
+              ${STATUS_VALUES.map(s => `<option value="${s}" ${safeStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
           </div>`;
         listEl.appendChild(card);
@@ -754,8 +812,23 @@
       listEl.querySelectorAll('.status-select').forEach(function (sel) {
         sel.addEventListener('change', function () {
           const id = sel.dataset.id;
-          sel.className = 'status-select status-' + sel.value;
-          quotesCol.doc(id).update({ status: sel.value }).catch(function () {});
+          const previous = sel.dataset.prev || sel.value;
+          const next = sel.value;
+          sel.className = 'status-select status-' + next;
+          sel.disabled = true;
+          quotesCol.doc(id).update({ status: next }).then(function () {
+            sel.dataset.prev = next;
+            sel.disabled = false;
+          }).catch(function () {
+            sel.value = previous;
+            sel.className = 'status-select status-' + previous;
+            sel.disabled = false;
+            const warn = document.createElement('div');
+            warn.textContent = 'Could not save that status change — try again.';
+            warn.style.cssText = 'color:var(--accent);font-size:0.78rem;margin-top:6px;';
+            sel.after(warn);
+            setTimeout(function () { warn.remove(); }, 4000);
+          });
         });
       });
     }, function () {
