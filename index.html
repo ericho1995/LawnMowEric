@@ -1,0 +1,772 @@
+<title>MowMate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #FBF8EF;
+    --surface: #FFFFFF;
+    --surface-2: #F3F0E4;
+    --text: #16231A;
+    --text-muted: #56655A;
+    --primary: #2E9E4F;
+    --primary-dark: #1D7238;
+    --primary-tint: #E3F4E7;
+    --accent: #FF6A1A;
+    --accent-soft: #FFD166;
+    --border: #E4E2D6;
+    --stripe-a: #2E9E4F;
+    --stripe-b: #279144;
+    --shadow: 0 20px 45px -25px rgba(22, 35, 26, 0.45);
+    --radius-lg: 28px;
+    --radius-md: 18px;
+    --radius-sm: 12px;
+    --font-display: 'Fredoka', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1A11;
+      --surface: #17241A;
+      --surface-2: #1E2C20;
+      --text: #EFF4EA;
+      --text-muted: #9CB097;
+      --primary: #4FCB74;
+      --primary-dark: #2E9E4F;
+      --primary-tint: #1C3123;
+      --accent: #FF8A42;
+      --accent-soft: #FFD166;
+      --border: #2A3A2C;
+      --stripe-a: #17331E;
+      --stripe-b: #123016;
+      --shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1A11;
+    --surface: #17241A;
+    --surface-2: #1E2C20;
+    --text: #EFF4EA;
+    --text-muted: #9CB097;
+    --primary: #4FCB74;
+    --primary-dark: #2E9E4F;
+    --primary-tint: #1C3123;
+    --accent: #FF8A42;
+    --accent-soft: #FFD166;
+    --border: #2A3A2C;
+    --stripe-a: #17331E;
+    --stripe-b: #123016;
+    --shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+    color: var(--text);
+  }
+  p { margin: 0; }
+  a { color: inherit; }
+  img { max-width: 100%; }
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  ::selection { background: var(--accent-soft); color: #16231A; }
+
+  /* ---------- Header ---------- */
+  header.site {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+  }
+  .logo-mark {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: repeating-linear-gradient(115deg, var(--primary) 0 8px, var(--primary-dark) 8px 16px);
+    display: grid;
+    place-items: center;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 20px; height: 20px; }
+  nav.links {
+    display: flex;
+    gap: 28px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  nav.links a { text-decoration: none; color: var(--text-muted); }
+  nav.links a:hover { color: var(--text); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 22px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); color: #1A1200; box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--primary); }
+  .btn-block { width: 100%; justify-content: center; padding: 15px 22px; font-size: 1rem; }
+  .nav-cta { display: none; }
+  @media (min-width: 760px) { .nav-cta { display: inline-flex; } }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 64px 24px 96px;
+    background:
+      linear-gradient(180deg, transparent 60%, var(--bg) 100%),
+      repeating-linear-gradient(115deg, var(--stripe-a) 0 42px, var(--stripe-b) 42px 84px);
+  }
+  .hero-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    gap: 40px;
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+  @media (min-width: 900px) { .hero-inner { grid-template-columns: 1.1fr 0.9fr; } }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.85);
+    color: var(--primary-dark);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    color: #FBFBF5;
+    line-height: 1.04;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.18);
+  }
+  .hero p.lede {
+    margin-top: 18px;
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.92);
+    max-width: 46ch;
+  }
+  .hero-actions { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
+
+  .hero-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transform: rotate(-1.2deg);
+  }
+  .hero-card .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  .stat { border-radius: var(--radius-sm); background: var(--surface-2); padding: 16px; }
+  .stat b { font-family: var(--font-display); font-size: 1.5rem; display: block; color: var(--primary-dark); }
+  .stat span { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ---------- Sections ---------- */
+  section { padding: 88px 0; }
+  .section-head { max-width: 640px; margin: 0 0 48px; }
+  .section-head .kicker {
+    display: inline-block; color: var(--accent); font-weight: 800; font-size: 0.82rem;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .section-head h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); }
+  .section-head p { margin-top: 14px; color: var(--text-muted); font-size: 1.05rem; }
+
+  .services-grid { display: grid; gap: 22px; grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .services-grid { grid-template-columns: repeat(3, 1fr); } }
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 26px;
+    position: relative;
+  }
+  .service-card .badge {
+    position: absolute; top: -12px; left: 22px;
+    background: var(--accent); color: #1A1200;
+    font-weight: 800; font-size: 0.72rem; letter-spacing: .03em;
+    padding: 4px 12px; border-radius: 999px;
+  }
+  .service-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-tint); color: var(--primary-dark);
+    display: grid; place-items: center; margin-bottom: 16px;
+  }
+  .service-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  .service-card p { color: var(--text-muted); font-size: 0.95rem; }
+  .service-card ul { margin: 14px 0 0; padding-left: 18px; color: var(--text-muted); font-size: 0.9rem; }
+  .service-card li + li { margin-top: 4px; }
+
+  .steps { display: grid; gap: 28px; grid-template-columns: 1fr; counter-reset: step; }
+  @media (min-width: 700px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+  .step { position: relative; padding-left: 0; }
+  .step .num {
+    font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: grid; place-items: center; margin-bottom: 16px;
+  }
+  .step h3 { font-size: 1.1rem; margin-bottom: 6px; }
+  .step p { color: var(--text-muted); font-size: 0.95rem; }
+
+  .area-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 36px;
+    display: grid; gap: 32px;
+  }
+  @media (min-width: 800px) { .area-panel { grid-template-columns: 1fr 1fr; } }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .chip {
+    background: var(--primary-tint); color: var(--primary-dark);
+    font-weight: 700; font-size: 0.88rem; padding: 8px 14px; border-radius: 999px;
+  }
+  .chip.soon { background: var(--surface-2); color: var(--text-muted); }
+  .area-col h3 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+  .live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); display: inline-block; }
+  .soon-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-soft); display: inline-block; }
+
+  /* ---------- Quote form ---------- */
+  .quote-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    box-shadow: var(--shadow);
+  }
+  .quote-grid { display: grid; gap: 18px; grid-template-columns: 1fr; margin-top: 28px; }
+  @media (min-width: 700px) { .quote-grid { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-weight: 700; font-size: 0.88rem; }
+  .field .hint { font-weight: 500; color: var(--text-muted); font-size: 0.8rem; }
+  input, select, textarea {
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    padding: 13px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-tint);
+  }
+  textarea { resize: vertical; min-height: 90px; font-family: var(--font-body); }
+  .form-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 26px; flex-wrap: wrap; }
+  .form-note { font-size: 0.85rem; color: var(--text-muted); max-width: 40ch; }
+  #quote-status { font-size: 0.9rem; font-weight: 700; }
+  #quote-status[data-state="error"] { color: var(--accent); }
+  #quote-status[data-state="ok"] { color: var(--primary-dark); }
+
+  .success-panel {
+    text-align: center; padding: 40px 20px;
+  }
+  .success-panel .tick {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--primary-tint);
+    color: var(--primary-dark); display: grid; place-items: center; margin: 0 auto 18px;
+  }
+  .success-panel h3 { font-size: 1.4rem; margin-bottom: 8px; }
+  .success-panel p { color: var(--text-muted); }
+
+  /* ---------- Trust ---------- */
+  .trust-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .trust-grid { grid-template-columns: repeat(3, 1fr); } }
+  .trust-card {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--surface-2); border-radius: var(--radius-md); padding: 22px;
+  }
+  .trust-card .service-icon { margin-bottom: 0; flex-shrink: 0; }
+  .trust-card h3 { font-size: 1.02rem; margin-bottom: 4px; }
+  .trust-card p { color: var(--text-muted); font-size: 0.9rem; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 0 32px;
+  }
+  .footer-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: center; }
+  .footer-links { display: flex; gap: 22px; font-size: 0.88rem; font-weight: 600; color: var(--text-muted); }
+  .footer-fine { margin-top: 28px; font-size: 0.78rem; color: var(--text-muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .footer-fine a { color: var(--text-muted); text-decoration: none; }
+  .footer-fine a:hover { text-decoration: underline; }
+
+  /* ---------- Admin ---------- */
+  #admin-view { display: none; }
+  #admin-view.active { display: block; }
+  #public-view.hidden { display: none; }
+  .admin-shell { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
+  .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+  .admin-head h1 { font-size: 1.7rem; }
+  .admin-empty { background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-md); padding: 40px; text-align: center; color: var(--text-muted); }
+  .lead-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 20px; margin-bottom: 16px; display: grid; gap: 14px; grid-template-columns: 1fr;
+  }
+  @media (min-width: 720px) { .lead-card { grid-template-columns: 2fr 1fr; align-items: start; } }
+  .lead-main h3 { font-size: 1.05rem; margin-bottom: 4px; }
+  .lead-meta { color: var(--text-muted); font-size: 0.85rem; margin-top: 6px; }
+  .lead-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .lead-tags span { background: var(--surface-2); font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; color: var(--text-muted); }
+  .lead-notes { margin-top: 10px; font-size: 0.88rem; color: var(--text-muted); font-style: italic; }
+  .status-select { font-weight: 700; }
+  .status-New { color: var(--accent); }
+  .status-Contacted { color: #B98800; }
+  .status-Scheduled { color: var(--primary-dark); }
+  .status-Completed { color: var(--text-muted); }
+  .admin-note { font-size: 0.82rem; color: var(--text-muted); margin-top: 22px; }
+  .back-link { font-size: 0.9rem; font-weight: 700; color: var(--primary-dark); text-decoration: none; }
+</style>
+
+<div id="public-view">
+
+<header class="site">
+  <div class="nav">
+    <div class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19c3-1 5-1 8 0s5 1 8 0" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M6 19V9m6 10V6m6 13v-7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      MowMate
+    </div>
+    <nav class="links">
+      <a href="#services">Services</a>
+      <a href="#how">How it works</a>
+      <a href="#area">Service area</a>
+    </nav>
+    <a class="btn btn-primary nav-cta" href="#quote">Get a quote</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">🌱 Now booking in Melbourne</span>
+      <h1>Your lawn, mowed by someone who actually shows up.</h1>
+      <p class="lede">Tell us about your lawn, get a straightforward quote, and pick a day. A vetted local mower — often Eric himself — takes it from there.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#quote">Get my free quote</a>
+        <a class="btn btn-ghost" href="#how" style="color:#fff;border-color:rgba(255,255,255,0.55)">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3 class="display" style="font-size:1.05rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">What decides your price</h3>
+      <div class="stat-row">
+        <div class="stat"><b>Size</b><span>Courtyard to full block</span></div>
+        <div class="stat"><b>Frequency</b><span>One-off or on a schedule</span></div>
+        <div class="stat"><b>Extras</b><span>Edging, trim, green waste</span></div>
+        <div class="stat"><b>Reply time</b><span>Within 1 business day</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Services</span>
+      <h2>Pick a mow, not a headache</h2>
+      <p>Every job starts with a standard mow — add what your lawn actually needs from there.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <span class="badge">Most booked</span>
+        <div class="service-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 20h18M6 20l1-9M18 20l-1-9M8 11h8l-1-6H9l-1 6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <h3>Standard mow</h3>
+        <p>A clean, even cut front and back, clippings mulched or caught — your call.</p>
+        <ul><li>Mow &amp; blow down of paths</li><li>Obstacle trimming</li><li>Photo left at the gate on request</li></ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 4v16M4 4h9l-3 3 3 3H4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <h3>Edge &amp; whipper snip</h3>
+        <p>Crisp edges along paths, fences and garden beds where the mower can't reach.</p>
+        <ul><li>Path &amp; driveway edging</li><li>Fence-line trimming</li><li>Bundled with any mow</li></ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3v6M9 6l3-3 3 3M5 21c1-6 5-9 7-9s6 3 7 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Hedge &amp; green waste</h3>
+        <p>Add hedge shaping and have clippings hauled away instead of left in bags.</p>
+        <ul><li>Light hedge trimming</li><li>Green waste removal</li><li>Priced per job, ask when quoting</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" style="background:var(--surface-2);">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">How it works</span>
+      <h2>Three steps, no phone tag</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Tell us about your lawn</h3>
+        <p>Suburb, rough size and how often you want it mowed — takes under a minute.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Get your price</h3>
+        <p>We reply within one business day with a straightforward quote — no call required to get it.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Pick a day, we mow</h3>
+        <p>Lock in a date. Your mower turns up, does the job, and you come home to a tidy lawn.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="area">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Service area</span>
+      <h2>Melbourne now, Sydney next</h2>
+      <p>Based in Melbourne and taking bookings across the inner and northern suburbs today.</p>
+    </div>
+    <div class="area-panel">
+      <div class="area-col">
+        <h3><span class="live-dot"></span> Booking now — Melbourne</h3>
+        <div class="chip-list">
+          <span class="chip">Melbourne CBD</span>
+          <span class="chip">Richmond</span>
+          <span class="chip">Fitzroy</span>
+          <span class="chip">Carlton</span>
+          <span class="chip">Brunswick</span>
+          <span class="chip">Preston</span>
+          <span class="chip">South Yarra</span>
+          <span class="chip">St Kilda</span>
+          <span class="chip">Footscray</span>
+          <span class="chip">Camberwell</span>
+        </div>
+      </div>
+      <div class="area-col">
+        <h3><span class="soon-dot"></span> Coming soon — Sydney</h3>
+        <div class="chip-list">
+          <span class="chip soon">Inner West</span>
+          <span class="chip soon">Eastern Suburbs</span>
+          <span class="chip soon">North Shore</span>
+          <span class="chip soon">Inner City</span>
+        </div>
+        <p style="margin-top:16px;color:var(--text-muted);font-size:0.9rem;">Not in Melbourne? Pop your suburb in the notes field below and we'll reach out when Sydney opens.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="quote" style="background:var(--surface-2);">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Get a quote</span>
+      <h2>Get your quote request in</h2>
+      <p>Fill this in and we'll come back to you within one business day with a price and a suggested date.</p>
+    </div>
+    <div class="quote-wrap">
+      <form id="quote-form">
+        <div class="quote-grid">
+          <div class="field">
+            <label for="q-name">Full name</label>
+            <input id="q-name" name="name" type="text" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="q-phone">Phone</label>
+            <input id="q-phone" name="phone" type="tel" required autocomplete="tel">
+          </div>
+          <div class="field">
+            <label for="q-email">Email</label>
+            <input id="q-email" name="email" type="email" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="q-suburb">Suburb / postcode</label>
+            <input id="q-suburb" name="suburb" type="text" placeholder="e.g. Brunswick, 3056" required>
+          </div>
+          <div class="field">
+            <label for="q-size">Lawn size</label>
+            <select id="q-size" name="size" required>
+              <option value="">Select one…</option>
+              <option>Small courtyard (under 100m²)</option>
+              <option>Medium yard (100–300m²)</option>
+              <option>Large block (300m²+)</option>
+              <option>Not sure — happy to estimate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-frequency">How often?</label>
+            <select id="q-frequency" name="frequency" required>
+              <option value="">Select one…</option>
+              <option>One-off mow</option>
+              <option>Weekly</option>
+              <option>Fortnightly</option>
+              <option>Monthly</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-day">Preferred day</label>
+            <select id="q-day" name="day">
+              <option value="Flexible">Flexible / no preference</option>
+              <option>Weekday morning</option>
+              <option>Weekday afternoon</option>
+              <option>Weekend</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-extras">Anything else?<span class="hint"> — optional</span></label>
+            <input id="q-extras" name="extras" type="text" placeholder="e.g. edging too, dog in the yard">
+          </div>
+          <div class="field full">
+            <label for="q-notes">Gate code, access notes, anything we should know</label>
+            <textarea id="q-notes" name="notes" placeholder="Side gate is unlocked, watch for the sprinkler head near the fence…"></textarea>
+          </div>
+        </div>
+        <div class="form-foot">
+          <span class="form-note">We'll only use these details to quote and book your mow.</span>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span id="quote-status"></span>
+            <button class="btn btn-primary" type="submit" id="quote-submit">Send my request</button>
+          </div>
+        </div>
+      </form>
+      <div class="success-panel" id="quote-success" style="display:none;">
+        <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Request received, <span id="success-name">there</span>.</h3>
+        <p>We'll be in touch within one business day with a quote and a suggested date.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Why MowMate</span>
+      <h2>What you can count on</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <div><h3>Insured &amp; vetted</h3><p>Every mower on a job is insured and identity-checked before they're sent to your door.</p></div>
+      </div>
+      <div class="trust-card">
+        <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><h3>Satisfaction guarantee</h3><p>Not happy with the mow? Tell us within 24 hours and we'll come back and make it right.</p></div>
+      </div>
+      <div class="trust-card">
+        <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5.5c0-1.7-2.2-2.5-5-2.5S7 3.8 7 5.5 9.2 8 12 8s5 .8 5 2.5-2.2 2.5-5 2.5-5-.8-5-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div><h3>Simple, flat pricing</h3><p>Priced on size and frequency, quoted up front — no surprise fees on the invoice.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="logo"><span class="logo-mark" style="width:28px;height:28px;"></span>MowMate</div>
+      <div class="footer-links">
+        <a href="#services">Services</a>
+        <a href="#how">How it works</a>
+        <a href="#area">Service area</a>
+        <a href="#quote">Get a quote</a>
+      </div>
+    </div>
+    <div class="footer-fine">
+      <span>© 2026 MowMate · Melbourne, VIC</span>
+      <a href="?admin">Business login</a>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<div id="admin-view">
+  <div class="admin-shell">
+    <div class="admin-head">
+      <div>
+        <a class="back-link" href="?">← Back to site</a>
+        <h1>Job queue</h1>
+      </div>
+    </div>
+    <div id="admin-list"></div>
+    <p class="admin-note">This is the Phase 1 admin view: every quote request lands here so you can call and quote manually, and track it through to completion. Assigning jobs to other mowers is scoped as Phase 3 in the requirements doc.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  const isAdmin = new URLSearchParams(location.search).has('admin');
+  const publicView = document.getElementById('public-view');
+  const adminView = document.getElementById('admin-view');
+  if (isAdmin) {
+    publicView.classList.add('hidden');
+    adminView.classList.add('active');
+  }
+
+  let db = null;
+  let quotesCol = null;
+
+  async function initDb() {
+    if (!window.claude || !window.claude.use) return;
+    try {
+      db = await window.claude.use('db');
+      if (db) quotesCol = db.collection('quotes');
+    } catch (e) { db = null; }
+    if (isAdmin) {
+      if (quotesCol) {
+        subscribeAdmin();
+      } else {
+        document.getElementById('admin-list').innerHTML =
+          '<div class="admin-empty">Job queue data isn\'t available in this view — open this page from your Claude account to see live submissions.</div>';
+      }
+    }
+  }
+  initDb();
+
+  // ---- Public quote form ----
+  const form = document.getElementById('quote-form');
+  const statusEl = document.getElementById('quote-status');
+  const successPanel = document.getElementById('quote-success');
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    const submitBtn = document.getElementById('quote-submit');
+    submitBtn.disabled = true;
+    statusEl.dataset.state = '';
+    statusEl.textContent = 'Sending…';
+
+    if (!quotesCol) {
+      // capability unavailable — offer an email fallback rather than pretending it saved
+      statusEl.dataset.state = 'error';
+      statusEl.textContent = 'Live capture unavailable in this preview — email us instead ↴';
+      const body = encodeURIComponent(
+        `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSuburb: ${data.suburb}\nLawn size: ${data.size}\nFrequency: ${data.frequency}\nPreferred day: ${data.day}\nExtras: ${data.extras || '-'}\nNotes: ${data.notes || '-'}`
+      );
+      const mailLink = document.createElement('a');
+      mailLink.href = `mailto:hello@mowmate.com.au?subject=Quote request&body=${body}`;
+      mailLink.textContent = 'Open email draft';
+      mailLink.className = 'btn btn-ghost';
+      mailLink.style.marginLeft = '10px';
+      statusEl.after(mailLink);
+      submitBtn.disabled = false;
+      return;
+    }
+
+    try {
+      await quotesCol.add({
+        ...data,
+        status: 'New',
+        createdAt: new Date().toISOString(),
+      });
+      form.style.display = 'none';
+      document.getElementById('success-name').textContent = data.name || 'there';
+      successPanel.style.display = 'block';
+    } catch (err) {
+      statusEl.dataset.state = 'error';
+      statusEl.textContent = 'Something went wrong — please try again.';
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ---- Admin job queue ----
+  function subscribeAdmin() {
+    const listEl = document.getElementById('admin-list');
+    quotesCol.orderBy('createdAt', 'desc').limit(100).onSnapshot(function (snap) {
+      if (snap.empty) {
+        listEl.innerHTML = '<div class="admin-empty">No quote requests yet — once someone submits the form, it shows up here.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      snap.docs.forEach(function (doc) {
+        const d = doc.data();
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        const when = d.createdAt ? new Date(d.createdAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+        card.innerHTML = `
+          <div class="lead-main">
+            <h3>${escapeHtml(d.name || 'Unnamed')} — ${escapeHtml(d.suburb || '')}</h3>
+            <div class="lead-meta">${escapeHtml(d.phone || '')} · ${escapeHtml(d.email || '')} · submitted ${when}</div>
+            <div class="lead-tags">
+              <span>${escapeHtml(d.size || '')}</span>
+              <span>${escapeHtml(d.frequency || '')}</span>
+              <span>${escapeHtml(d.day || 'Flexible')}</span>
+            </div>
+            ${d.extras ? `<div class="lead-notes">Extras: ${escapeHtml(d.extras)}</div>` : ''}
+            ${d.notes ? `<div class="lead-notes">"${escapeHtml(d.notes)}"</div>` : ''}
+          </div>
+          <div>
+            <label style="font-size:0.8rem;font-weight:700;color:var(--text-muted);">Status</label>
+            <select class="status-select status-${d.status || 'New'}" data-id="${doc.id}">
+              ${['New','Contacted','Scheduled','Completed'].map(s => `<option value="${s}" ${d.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+          </div>`;
+        listEl.appendChild(card);
+      });
+      listEl.querySelectorAll('.status-select').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+          const id = sel.dataset.id;
+          sel.className = 'status-select status-' + sel.value;
+          quotesCol.doc(id).update({ status: sel.value }).catch(function () {});
+        });
+      });
+    }, function () {
+      listEl.innerHTML = '<div class="admin-empty">Could not load the job queue right now.</div>';
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>
