@@ -1,22 +1,24 @@
-<title>MowMate</title>
+<meta charset="UTF-8">
+<title>The Lawn Care</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
 <style>
   :root {
     --bg: #FBF8EF;
     --surface: #FFFFFF;
     --surface-2: #F3F0E4;
-    --text: #16231A;
-    --text-muted: #56655A;
+    --text: #211D17;
+    --text-muted: #6B6459;
     --primary: #2E9E4F;
     --primary-dark: #1D7238;
     --primary-tint: #E3F4E7;
     --accent: #FF6A1A;
+    --accent-dark: #C2490A;
     --accent-soft: #FFD166;
     --border: #E4E2D6;
-    --stripe-a: #2E9E4F;
-    --stripe-b: #279144;
     --shadow: 0 20px 45px -25px rgba(22, 35, 26, 0.45);
     --radius-lg: 28px;
     --radius-md: 18px;
@@ -30,16 +32,15 @@
       --bg: #0F1A11;
       --surface: #17241A;
       --surface-2: #1E2C20;
-      --text: #EFF4EA;
-      --text-muted: #9CB097;
+      --text: #F2EFE7;
+      --text-muted: #A8A296;
       --primary: #4FCB74;
       --primary-dark: #2E9E4F;
       --primary-tint: #1C3123;
       --accent: #FF8A42;
+      --accent-dark: #FFA766;
       --accent-soft: #FFD166;
       --border: #2A3A2C;
-      --stripe-a: #17331E;
-      --stripe-b: #123016;
       --shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.6);
     }
   }
@@ -47,16 +48,15 @@
     --bg: #0F1A11;
     --surface: #17241A;
     --surface-2: #1E2C20;
-    --text: #EFF4EA;
-    --text-muted: #9CB097;
+    --text: #F2EFE7;
+    --text-muted: #A8A296;
     --primary: #4FCB74;
     --primary-dark: #2E9E4F;
     --primary-tint: #1C3123;
     --accent: #FF8A42;
+    --accent-dark: #FFA766;
     --accent-soft: #FFD166;
     --border: #2A3A2C;
-    --stripe-a: #17331E;
-    --stripe-b: #123016;
     --shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.6);
   }
 
@@ -123,12 +123,13 @@
   }
   .logo-mark svg { width: 20px; height: 20px; }
   nav.links {
-    display: flex;
+    display: none;
     gap: 28px;
     font-weight: 600;
     font-size: 0.95rem;
   }
   nav.links a { text-decoration: none; color: var(--text-muted); }
+  @media (min-width: 760px) { nav.links { display: flex; } }
   nav.links a:hover { color: var(--text); }
   .btn {
     display: inline-flex;
@@ -148,21 +149,27 @@
   .btn-primary { background: var(--accent); color: #1A1200; box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
   .btn-primary:hover { transform: translateY(-1px); }
   .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--primary); }
+  .btn-ghost:hover { border-color: var(--accent); }
   .btn-block { width: 100%; justify-content: center; padding: 15px 22px; font-size: 1rem; }
-  .nav-cta { display: none; }
-  @media (min-width: 760px) { .nav-cta { display: inline-flex; } }
+  .nav-cta { display: inline-flex; padding: 10px 16px; font-size: 0.88rem; }
+  @media (min-width: 760px) { .nav-cta { padding: 12px 22px; font-size: 0.95rem; } }
 
   /* ---------- Hero ---------- */
   .hero {
     position: relative;
     overflow: hidden;
-    padding: 64px 24px 96px;
+    padding: 88px 24px 120px;
+    min-height: 82vh;
+    display: flex;
+    align-items: center;
     background:
-      linear-gradient(180deg, transparent 60%, var(--bg) 100%),
-      repeating-linear-gradient(115deg, var(--stripe-a) 0 42px, var(--stripe-b) 42px 84px);
+      radial-gradient(900px 480px at 12% -8%, color-mix(in srgb, var(--accent) 42%, transparent) 0%, transparent 65%),
+      linear-gradient(180deg, rgba(10,8,5,0.35) 0%, rgba(8,7,5,0.72) 62%, var(--bg) 100%),
+      url('https://images.unsplash.com/photo-1773917735999-2a89191afc55?fm=jpg&q=80&w=2400&auto=format&fit=crop') center 60% / cover no-repeat;
   }
+  @media (max-width: 640px) { .hero { min-height: auto; padding: 72px 20px 88px; } }
   .hero-inner {
+    width: 100%;
     max-width: 1120px;
     margin: 0 auto;
     display: grid;
@@ -176,7 +183,7 @@
     align-items: center;
     gap: 8px;
     background: rgba(255,255,255,0.85);
-    color: var(--primary-dark);
+    color: var(--accent-dark);
     font-weight: 700;
     font-size: 0.82rem;
     letter-spacing: 0.04em;
@@ -209,7 +216,7 @@
   }
   .hero-card .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
   .stat { border-radius: var(--radius-sm); background: var(--surface-2); padding: 16px; }
-  .stat b { font-family: var(--font-display); font-size: 1.5rem; display: block; color: var(--primary-dark); }
+  .stat b { font-family: var(--font-display); font-size: 1.5rem; display: block; color: var(--accent-dark); }
   .stat span { font-size: 0.82rem; color: var(--text-muted); }
 
   /* ---------- Sections ---------- */
@@ -221,6 +228,42 @@
   }
   .section-head h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); }
   .section-head p { margin-top: 14px; color: var(--text-muted); font-size: 1.05rem; }
+
+  /* ---------- Gallery ---------- */
+  .gallery-grid { display: grid; gap: 18px; grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 700px) { .gallery-grid { grid-template-columns: repeat(4, 1fr); } }
+  .gallery-item {
+    position: relative; margin: 0; border-radius: var(--radius-md);
+    overflow: hidden; box-shadow: var(--shadow); aspect-ratio: 3 / 4;
+    background: var(--surface-2);
+  }
+  .gallery-item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .5s ease;
+  }
+  .gallery-item:hover img { transform: scale(1.07); }
+  .gallery-item figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 14px 14px 12px;
+    background: linear-gradient(180deg, transparent, rgba(10,8,5,0.78));
+    color: #fff; font-weight: 700; font-size: 0.85rem;
+  }
+
+  /* ---------- Reviews ---------- */
+  .reviews-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 700px) { .reviews-grid { grid-template-columns: repeat(3, 1fr); } }
+  .review-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 24px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .review-stars { color: var(--accent); display: flex; gap: 2px; }
+  .review-quote { color: var(--text); font-size: 0.98rem; line-height: 1.55; }
+  .review-who { font-weight: 700; font-size: 0.88rem; color: var(--text-muted); margin-top: auto; }
+  .reviews-empty {
+    background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-md);
+    padding: 40px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;
+  }
+  .reviews-empty strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 1.05rem; }
 
   .services-grid { display: grid; gap: 22px; grid-template-columns: 1fr; }
   @media (min-width: 700px) { .services-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -239,7 +282,7 @@
   }
   .service-icon {
     width: 48px; height: 48px; border-radius: 12px;
-    background: var(--primary-tint); color: var(--primary-dark);
+    background: var(--surface-2); color: var(--text);
     display: grid; place-items: center; margin-bottom: 16px;
   }
   .service-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
@@ -253,7 +296,7 @@
   .step .num {
     font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
     width: 44px; height: 44px; border-radius: 50%;
-    background: var(--primary); color: #fff;
+    background: var(--accent); color: #1A1200;
     display: grid; place-items: center; margin-bottom: 16px;
   }
   .step h3 { font-size: 1.1rem; margin-bottom: 6px; }
@@ -261,13 +304,14 @@
 
   .area-panel {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 36px;
+    border-radius: var(--radius-lg); padding: 22px;
     display: grid; gap: 32px;
   }
+  @media (min-width: 640px) { .area-panel { padding: 36px; } }
   @media (min-width: 800px) { .area-panel { grid-template-columns: 1fr 1fr; } }
   .chip-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
   .chip {
-    background: var(--primary-tint); color: var(--primary-dark);
+    background: var(--surface-2); color: var(--text);
     font-weight: 700; font-size: 0.88rem; padding: 8px 14px; border-radius: 999px;
   }
   .chip.soon { background: var(--surface-2); color: var(--text-muted); }
@@ -280,9 +324,10 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 40px;
+    padding: 22px;
     box-shadow: var(--shadow);
   }
+  @media (min-width: 640px) { .quote-wrap { padding: 40px; } }
   .quote-grid { display: grid; gap: 18px; grid-template-columns: 1fr; margin-top: 28px; }
   @media (min-width: 700px) { .quote-grid { grid-template-columns: 1fr 1fr; } }
   .field { display: flex; flex-direction: column; gap: 7px; }
@@ -299,15 +344,63 @@
     color: var(--text);
   }
   input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-tint);
+    outline: none; border-color: var(--text);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 12%, transparent);
   }
   textarea { resize: vertical; min-height: 90px; font-family: var(--font-body); }
   .form-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 26px; flex-wrap: wrap; }
   .form-note { font-size: 0.85rem; color: var(--text-muted); max-width: 40ch; }
   #quote-status { font-size: 0.9rem; font-weight: 700; }
   #quote-status[data-state="error"] { color: var(--accent); }
-  #quote-status[data-state="ok"] { color: var(--primary-dark); }
+  #quote-status[data-state="ok"] { color: var(--accent-dark); }
+
+  /* ---------- Lawn size estimator ---------- */
+  .estimator {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .estimator-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .estimator-head h3 { font-size: 1.15rem; margin-bottom: 4px; }
+  .estimator-head p { color: var(--text-muted); font-size: 0.9rem; max-width: 52ch; }
+  .estimator-step {
+    display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+  .estimator-step-num {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2);
+    color: var(--text); font-size: 0.8rem; display: inline-flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .estimator-search { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .estimator-search input { flex: 1 1 260px; }
+  .estimator-search .btn { flex-shrink: 0; }
+  #lawn-map {
+    height: 380px; width: 100%; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--surface-2);
+    touch-action: none;
+  }
+  /* Default leaflet.draw toolbar is replaced by our own bigger, labeled buttons below the map. */
+  .leaflet-draw.leaflet-control { display: none; }
+  .estimator-draw-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .estimator-draw-controls .btn {
+    padding: 10px 16px; font-size: 0.88rem;
+  }
+  .estimator-draw-controls .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .estimator-draw-controls .btn.active { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .estimator-status { font-size: 0.85rem; font-weight: 600; margin-top: 10px; min-height: 1.2em; color: var(--text-muted); }
+  .estimator-status[data-state="error"] { color: var(--accent); }
+  .estimator-status[data-state="ok"] { color: var(--accent-dark); }
+  .estimator-result {
+    margin-top: 18px; padding: 18px 20px; border-radius: var(--radius-md);
+    background: var(--surface-2); border: 1.5px solid var(--border); display: none; gap: 18px; flex-wrap: wrap;
+    align-items: center; justify-content: space-between;
+  }
+  .estimator-result.visible { display: flex; }
+  .estimator-result .figures { display: flex; gap: 26px; flex-wrap: wrap; }
+  .estimator-result .figures b { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent-dark); display: block; }
+  .estimator-result .figures span { font-size: 0.78rem; color: var(--text-muted); }
+  .estimator-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; }
 
   .success-panel {
     text-align: center; padding: 40px 20px;
@@ -365,7 +458,7 @@
   .status-Scheduled { color: var(--primary-dark); }
   .status-Completed { color: var(--text-muted); }
   .admin-note { font-size: 0.82rem; color: var(--text-muted); margin-top: 22px; }
-  .back-link { font-size: 0.9rem; font-weight: 700; color: var(--primary-dark); text-decoration: none; }
+  .back-link { font-size: 0.9rem; font-weight: 700; color: var(--accent-dark); text-decoration: none; }
   .admin-gate {
     max-width: 360px; margin: 60px auto; background: var(--surface);
     border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -384,10 +477,11 @@
       <span class="logo-mark">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19c3-1 5-1 8 0s5 1 8 0" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M6 19V9m6 10V6m6 13v-7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
       </span>
-      MowMate
+      The Lawn Care
     </div>
     <nav class="links">
       <a href="#services">Services</a>
+      <a href="#work">Our work</a>
       <a href="#how">How it works</a>
       <a href="#area">Service area</a>
     </nav>
@@ -400,7 +494,7 @@
     <div>
       <span class="eyebrow">🌱 Now booking in Melbourne</span>
       <h1>Your lawn, mowed by someone who actually shows up.</h1>
-      <p class="lede">Tell us about your lawn, get a straightforward quote, and pick a day. Eric picks up every job personally while MowMate is just getting started.</p>
+      <p class="lede">Tell us about your lawn, get a straightforward quote, and pick a day. Eric picks up every job personally while The Lawn Care is just getting started.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#quote">Get my free quote</a>
         <a class="btn btn-ghost" href="#how" style="color:#fff;border-color:rgba(255,255,255,0.55)">See how it works</a>
@@ -449,7 +543,35 @@
   </div>
 </section>
 
-<section id="how" style="background:var(--surface-2);">
+<section id="work" style="background:var(--surface-2);">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Our work</span>
+      <h2>The kind of finish you can expect</h2>
+      <p>Clean edges, even stripes, no shortcuts — that's the standard for every visit, not just the first one.</p>
+    </div>
+    <div class="gallery-grid">
+      <figure class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1734303023491-db8037a21f09?fm=jpg&q=75&w=800&auto=format&fit=crop" alt="Mowing a lawn with an even, clean cut" loading="lazy">
+        <figcaption>A clean, even cut</figcaption>
+      </figure>
+      <figure class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1642541744624-7a2a89545a32?fm=jpg&q=75&w=800&auto=format&fit=crop" alt="A tidy lawn with neatly kept hedges" loading="lazy">
+        <figcaption>Edges and hedges done right</figcaption>
+      </figure>
+      <figure class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1738193830098-2d92352a1856?fm=jpg&q=75&w=800&auto=format&fit=crop" alt="A well-kept front yard with a mowed lawn" loading="lazy">
+        <figcaption>Tidy from the street</figcaption>
+      </figure>
+      <figure class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1458245201577-fc8a130b8829?fm=jpg&q=75&w=800&auto=format&fit=crop" alt="Lawn mower on freshly cut grass" loading="lazy">
+        <figcaption>The right gear for the job</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="how">
   <div class="wrap">
     <div class="section-head">
       <span class="kicker">How it works</span>
@@ -475,7 +597,7 @@
   </div>
 </section>
 
-<section id="area">
+<section id="area" style="background:var(--surface-2);">
   <div class="wrap">
     <div class="section-head">
       <span class="kicker">Service area</span>
@@ -509,6 +631,29 @@
   </div>
 </section>
 
+<section id="reviews">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Reviews</span>
+      <h2>What customers say</h2>
+      <p>New to Melbourne, so this list is short — real reviews land here as jobs get done. See <code>docs/pre-live-checklist.md</code> or ask Eric for the current draft reviews to swap in.</p>
+    </div>
+    <div class="reviews-grid">
+      <!-- Real-review format — duplicate this block per review once available:
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">"Quote goes here."</p>
+        <p class="review-who">First name, Suburb</p>
+      </div>
+      -->
+      <div class="reviews-empty">
+        <strong>No reviews published yet.</strong>
+        Ask about a first-job rate — honest feedback afterwards helps build this list.
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="quote" style="background:var(--surface-2);">
   <div class="wrap">
     <div class="section-head">
@@ -516,8 +661,44 @@
       <h2>Get your quote request in</h2>
       <p>Fill this in and we'll come back to you within one business day with a price and a suggested date.</p>
     </div>
+
+    <div class="estimator">
+      <div class="estimator-head">
+        <div>
+          <h3>🛰️ Draw your lawn for an instant size &amp; price estimate</h3>
+          <p>Find your address, then trace the mowable area on the satellite view. We'll calculate the exact area and give you a ballpark price on the spot — optional, but it saves back-and-forth.</p>
+        </div>
+      </div>
+      <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
+      <div class="estimator-search">
+        <input type="text" id="lawn-address" placeholder="Type your address, e.g. 12 Smith St, Brunswick VIC" autocomplete="off">
+        <button type="button" class="btn btn-ghost" id="lawn-address-search">Find address</button>
+      </div>
+      <div id="lawn-map"></div>
+      <div class="estimator-step" style="margin-top:16px;"><span class="estimator-step-num">2</span> Trace your lawn</div>
+      <div class="estimator-draw-controls">
+        <button type="button" class="btn btn-primary" id="draw-polygon-btn">✏️ Trace my lawn shape</button>
+        <button type="button" class="btn btn-ghost" id="draw-rect-btn">▭ Draw a simple rectangle</button>
+        <button type="button" class="btn btn-ghost" id="draw-undo-btn" disabled>↩ Undo last point</button>
+        <button type="button" class="btn btn-ghost" id="draw-clear-btn" disabled>🗑 Clear drawing</button>
+      </div>
+      <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Click "Trace my lawn shape", then click points around the edge of your lawn — click the first point again (or double-click) to close the shape.</div>
+      <div class="estimator-result" id="estimator-result">
+        <div class="figures">
+          <div><b id="estimator-area-m2">–</b><span>m² traced</span></div>
+          <div><b id="estimator-area-sqft">–</b><span>sq ft</span></div>
+          <div><b id="estimator-price">–</b><span>est. per standard mow</span></div>
+        </div>
+        <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
+      </div>
+      <p class="estimator-note">Estimate only, based on traced area for a regularly-mowed lawn — final price is confirmed by Eric before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+    </div>
+
     <div class="quote-wrap">
       <form id="quote-form">
+        <input type="hidden" id="q-area-m2" name="areaM2">
+        <input type="hidden" id="q-estimate-low" name="estimateLow">
+        <input type="hidden" id="q-estimate-high" name="estimateHigh">
         <div class="quote-grid">
           <div class="field">
             <label for="q-name">Full name</label>
@@ -536,13 +717,24 @@
             <input id="q-suburb" name="suburb" type="text" placeholder="e.g. Brunswick, 3056" required>
           </div>
           <div class="field">
-            <label for="q-size">Lawn size</label>
+            <label for="q-size">Lawn size<span class="hint"> — or use the map above for an exact figure</span></label>
             <select id="q-size" name="size" required>
               <option value="">Select one…</option>
-              <option>Small courtyard (under 100m²)</option>
-              <option>Medium yard (100–300m²)</option>
-              <option>Large block (300m²+)</option>
+              <option>Small courtyard (under 150m²)</option>
+              <option>Medium yard (150–400m²)</option>
+              <option>Large block (400–800m²)</option>
+              <option>Extra-large (800m²+)</option>
               <option>Not sure — happy to estimate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-last-mowed">When was it last mowed?</label>
+            <select id="q-last-mowed" name="lastMowed">
+              <option value="0–2 weeks (regularly maintained)">0–2 weeks (regularly maintained)</option>
+              <option value="2–4 weeks">2–4 weeks</option>
+              <option value="4–8 weeks">4–8 weeks</option>
+              <option value="8+ weeks / very overgrown">8+ weeks / very overgrown</option>
+              <option value="Not sure">Not sure</option>
             </select>
           </div>
           <div class="field">
@@ -584,7 +776,7 @@
       <div class="success-panel" id="quote-success" style="display:none;" role="status" aria-live="polite">
         <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>Request received, <span id="success-name">there</span>.</h3>
-        <p>We'll be in touch within one business day with a quote and a suggested date.</p>
+        <p>We'll be in touch within one business day with a quote and a suggested date. To lock in your booking, a small deposit by bank transfer is required within 24 hours of accepting your quote — details come with it.</p>
       </div>
     </div>
   </div>
@@ -593,13 +785,13 @@
 <section id="trust">
   <div class="wrap">
     <div class="section-head">
-      <span class="kicker">Why MowMate</span>
+      <span class="kicker">Why The Lawn Care</span>
       <h2>What you can count on</h2>
     </div>
     <div class="trust-grid">
       <div class="trust-card">
         <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-        <div><h3>You know who's coming</h3><p>Right now every job is done by Eric in person — no unknown subcontractor turning up. As MowMate grows, every added mower will be insured and checked before they're sent out.</p></div>
+        <div><h3>You know who's coming</h3><p>Right now every job is done by Eric in person — no unknown subcontractor turning up. As The Lawn Care grows, every added mower will be insured and checked before they're sent out.</p></div>
       </div>
       <div class="trust-card">
         <div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -616,16 +808,17 @@
 <footer>
   <div class="wrap">
     <div class="footer-grid">
-      <div class="logo"><span class="logo-mark" style="width:28px;height:28px;"></span>MowMate</div>
+      <div class="logo"><span class="logo-mark" style="width:28px;height:28px;"></span>The Lawn Care</div>
       <div class="footer-links">
         <a href="#services">Services</a>
         <a href="#how">How it works</a>
         <a href="#area">Service area</a>
         <a href="#quote">Get a quote</a>
+        <a href="privacy.html">Privacy policy</a>
       </div>
     </div>
     <div class="footer-fine">
-      <span>© 2026 MowMate · Melbourne, VIC</span>
+      <span>© 2026 The Lawn Care · ABN 79 369 208 780 · Melbourne, VIC</span>
       <a href="?admin">Admin (private link)</a>
     </div>
   </div>
@@ -663,7 +856,7 @@
   // Stopgap only — not real auth. Anyone who reads this file's source sees the
   // passphrase. It exists purely so the admin view isn't wide open to a casual
   // click on the footer link. Replace with real accounts in Phase 2.
-  const ADMIN_PASSPHRASE = 'mowmate-admin';
+  const ADMIN_PASSPHRASE = 'Mowtown-Eric-2026!';
 
   const isAdmin = new URLSearchParams(location.search).has('admin');
   const publicView = document.getElementById('public-view');
@@ -706,13 +899,13 @@
       initDb().catch(function () {}).then(startAdminData);
     }
 
-    if (sessionStorage.getItem('mowmate_admin_ok') === '1') {
+    if (sessionStorage.getItem('lawncare_admin_ok') === '1') {
       unlockAdmin();
     } else {
       gateForm.addEventListener('submit', function (e) {
         e.preventDefault();
         if (gateInput.value === ADMIN_PASSPHRASE) {
-          sessionStorage.setItem('mowmate_admin_ok', '1');
+          sessionStorage.setItem('lawncare_admin_ok', '1');
           unlockAdmin();
         } else {
           gateError.textContent = 'That passphrase isn\'t right.';
@@ -731,6 +924,31 @@
   const successPanel = document.getElementById('quote-success');
   let fallbackLink = null;
 
+  // Real automatic capture for real hosting (outside the Artifact `db`
+  // capability): FormSubmit.co forwards the submission straight to Eric's
+  // inbox, no account/signup needed. One-time gotcha: the very first
+  // submission to a new site+email combo triggers a "confirm this form"
+  // email from FormSubmit instead of delivering the real content - Eric
+  // has to click that once before real submissions start arriving normally.
+  async function sendViaFormBackend(data) {
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/ericho995@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          _subject: 'New quote request - The Lawn Care',
+          _replyto: data.email,
+          _captcha: 'false',
+          _template: 'table'
+        })
+      });
+      return res.ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
@@ -741,14 +959,25 @@
     if (fallbackLink) { fallbackLink.remove(); fallbackLink = null; }
 
     if (!quotesCol) {
-      // capability unavailable — offer an email fallback rather than pretending it saved
+      // No live db capability (i.e. not inside a published Claude Artifact) -
+      // send it automatically via FormSubmit instead of the live database.
+      const sent = await sendViaFormBackend(data);
+      if (sent) {
+        form.style.display = 'none';
+        document.getElementById('success-name').textContent = data.name || 'there';
+        successPanel.style.display = 'block';
+        submitBtn.disabled = false;
+        return;
+      }
+      // FormSubmit unreachable (offline, blocked by an ad-blocker, etc.) -
+      // last-resort fallback so the request isn't silently lost.
       statusEl.dataset.state = 'error';
-      statusEl.textContent = 'Live capture unavailable in this preview — email us instead ↴';
+      statusEl.textContent = "Couldn't send that automatically — email us instead ↴";
       const body = encodeURIComponent(
-        `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSuburb: ${data.suburb}\nLawn size: ${data.size}\nFrequency: ${data.frequency}\nPreferred day: ${data.day}\nExtras: ${data.extras || '-'}\nNotes: ${data.notes || '-'}`
+        `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSuburb: ${data.suburb}\nLawn size: ${data.size}${data.areaM2 ? ` (mapped: ${Math.round(data.areaM2)}m², est. $${data.estimateLow}-$${data.estimateHigh})` : ''}\nLast mowed: ${data.lastMowed || 'Not sure'}\nFrequency: ${data.frequency}\nPreferred day: ${data.day}\nExtras: ${data.extras || '-'}\nNotes: ${data.notes || '-'}`
       );
       fallbackLink = document.createElement('a');
-      fallbackLink.href = `mailto:ericho995@gmail.com?subject=MowMate quote request&body=${body}`;
+      fallbackLink.href = `mailto:ericho995@gmail.com?subject=The Lawn Care quote request&body=${body}`;
       fallbackLink.textContent = 'Open email draft';
       fallbackLink.className = 'btn btn-ghost';
       fallbackLink.style.marginLeft = '10px';
@@ -795,9 +1024,11 @@
             <div class="lead-meta">${escapeHtml(d.phone || '')} · ${escapeHtml(d.email || '')} · submitted ${when}</div>
             <div class="lead-tags">
               <span>${escapeHtml(d.size || '')}</span>
+              ${d.lastMowed ? `<span>Last mowed: ${escapeHtml(d.lastMowed)}</span>` : ''}
               <span>${escapeHtml(d.frequency || '')}</span>
               <span>${escapeHtml(d.day || 'Flexible')}</span>
             </div>
+            ${d.areaM2 ? `<div class="lead-notes">Mapped lawn area: ${escapeHtml(String(Math.round(Number(d.areaM2))))} m² · Est. ${d.estimateLow ? `$${escapeHtml(String(d.estimateLow))}–$${escapeHtml(String(d.estimateHigh))}` : 'quote on request'} per standard mow</div>` : ''}
             ${d.extras ? `<div class="lead-notes">Extras: ${escapeHtml(d.extras)}</div>` : ''}
             ${d.notes ? `<div class="lead-notes">"${escapeHtml(d.notes)}"</div>` : ''}
           </div>
@@ -806,6 +1037,10 @@
             <select id="status-${safeId}" class="status-select status-${safeStatus}" data-id="${safeId}">
               ${STATUS_VALUES.map(s => `<option value="${s}" ${safeStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:0.85rem;font-weight:700;">
+              <input type="checkbox" id="deposit-${safeId}" class="deposit-check" data-id="${safeId}" ${d.depositPaid ? 'checked' : ''}>
+              Deposit paid
+            </label>
           </div>`;
         listEl.appendChild(card);
       });
@@ -831,6 +1066,24 @@
           });
         });
       });
+      listEl.querySelectorAll('.deposit-check').forEach(function (checkbox) {
+        checkbox.addEventListener('change', function () {
+          const id = checkbox.dataset.id;
+          const next = checkbox.checked;
+          checkbox.disabled = true;
+          quotesCol.doc(id).update({ depositPaid: next }).then(function () {
+            checkbox.disabled = false;
+          }).catch(function () {
+            checkbox.checked = !next;
+            checkbox.disabled = false;
+            const warn = document.createElement('div');
+            warn.textContent = 'Could not save that — try again.';
+            warn.style.cssText = 'color:var(--accent);font-size:0.78rem;margin-top:6px;';
+            checkbox.parentElement.after(warn);
+            setTimeout(function () { warn.remove(); }, 4000);
+          });
+        });
+      });
     }, function () {
       listEl.innerHTML = '<div class="admin-empty">Could not load the job queue right now.</div>';
     });
@@ -841,5 +1094,283 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/7.4.0/turf.min.js"></script>
+<script>
+(function () {
+  // ---- Pricing rules ----
+  // Base bands from Melbourne market research (Sept 2026) — see
+  // docs/requirements.md. Covers a standard mow only; edging, hedging,
+  // green waste and access surcharges are quoted separately.
+  const PRICING = {
+    bands: [
+      { max: 150, low: 50, high: 65 },
+      { max: 400, low: 70, high: 90 },
+      { max: 800, low: 95, high: 130 }
+      // 800m²+ is quote-on-request — no fixed band.
+    ]
+  };
+
+  function computeEstimate(areaM2) {
+    const band = PRICING.bands.find(function (b) { return areaM2 <= b.max; });
+    if (!band) return { quoteOnRequest: true };
+    return { low: band.low, high: band.high };
+  }
+
+  const mapContainer = document.getElementById('lawn-map');
+  if (!mapContainer) return;
+
+  const isAdmin = new URLSearchParams(location.search).has('admin');
+  if (isAdmin) return; // estimator is public-quote-form only; skip on ?admin
+
+  const statusEl = document.getElementById('estimator-status');
+  const resultEl = document.getElementById('estimator-result');
+  const areaM2El = document.getElementById('estimator-area-m2');
+  const areaSqftEl = document.getElementById('estimator-area-sqft');
+  const priceEl = document.getElementById('estimator-price');
+  const useBtn = document.getElementById('estimator-use');
+  const addressInput = document.getElementById('lawn-address');
+  const searchBtn = document.getElementById('lawn-address-search');
+  const polygonBtn = document.getElementById('draw-polygon-btn');
+  const rectBtn = document.getElementById('draw-rect-btn');
+  const undoBtn = document.getElementById('draw-undo-btn');
+  const clearBtn = document.getElementById('draw-clear-btn');
+
+  const DEFAULT_HINT = 'Click "Trace my lawn shape", then click points around the edge of your lawn — click the first point again (or double-click) to close the shape.';
+  const MIN_DRAW_ZOOM = 18;
+
+  let map = null;
+  let drawnItems = null;
+  let polygonHandler = null;
+  let rectangleHandler = null;
+  let activeHandler = null;
+  let currentAreaM2 = 0;
+  let currentEstimate = null;
+
+  function setStatus(text, state) {
+    statusEl.textContent = text || DEFAULT_HINT;
+    if (state) statusEl.dataset.state = state; else statusEl.removeAttribute('data-state');
+  }
+
+  function bindRemovePopup(layer) {
+    const wrap = document.createElement('div');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-ghost';
+    btn.style.cssText = 'padding:6px 12px;font-size:0.8rem;';
+    btn.textContent = 'Remove this shape';
+    btn.addEventListener('click', function () {
+      drawnItems.removeLayer(layer);
+      map.closePopup();
+      recalcArea();
+    });
+    wrap.appendChild(btn);
+    layer.bindPopup(wrap);
+  }
+
+  function setDrawingState(isDrawing) {
+    polygonBtn.classList.toggle('active', isDrawing && activeHandler === polygonHandler);
+    rectBtn.classList.toggle('active', isDrawing && activeHandler === rectangleHandler);
+    undoBtn.disabled = !(isDrawing && activeHandler === polygonHandler);
+    if (!isDrawing) activeHandler = null;
+  }
+
+  function ensureCloseZoom() {
+    if (map.getZoom() < MIN_DRAW_ZOOM) {
+      map.setZoom(19);
+      setStatus('Zoomed in closer first, for a more accurate trace.', 'ok');
+    }
+  }
+
+  function initMap() {
+    if (map) return;
+    map = L.map(mapContainer, { center: [-37.8136, 144.9631], zoom: 13 });
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 20,
+      attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
+    }).addTo(map);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 20,
+      opacity: 0.9
+    }).addTo(map);
+
+    drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    polygonHandler = new L.Draw.Polygon(map, {
+      allowIntersection: false,
+      showArea: true,
+      shapeOptions: { color: '#FF6A1A', weight: 3 }
+    });
+    rectangleHandler = new L.Draw.Rectangle(map, {
+      shapeOptions: { color: '#FF6A1A', weight: 3 }
+    });
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+      bindRemovePopup(e.layer);
+      drawnItems.addLayer(e.layer);
+      recalcArea();
+    });
+    map.on(L.Draw.Event.DRAWSTART, function () { setDrawingState(true); });
+    map.on(L.Draw.Event.DRAWSTOP, function () { setDrawingState(false); });
+  }
+
+  polygonBtn.addEventListener('click', function () {
+    initMap();
+    if (activeHandler) activeHandler.disable();
+    ensureCloseZoom();
+    activeHandler = polygonHandler;
+    polygonHandler.enable();
+    setStatus(DEFAULT_HINT);
+  });
+
+  rectBtn.addEventListener('click', function () {
+    initMap();
+    if (activeHandler) activeHandler.disable();
+    ensureCloseZoom();
+    activeHandler = rectangleHandler;
+    rectangleHandler.enable();
+    setStatus('Click and drag a rectangle over your lawn.');
+  });
+
+  undoBtn.addEventListener('click', function () {
+    if (activeHandler === polygonHandler) {
+      try { polygonHandler.deleteLastVertex(); } catch (e) { /* nothing to undo */ }
+    }
+  });
+
+  clearBtn.addEventListener('click', function () {
+    if (!drawnItems) return;
+    drawnItems.clearLayers();
+    recalcArea();
+  });
+
+  function recalcArea() {
+    let totalM2 = 0;
+    let shapeCount = 0;
+    if (drawnItems) {
+      drawnItems.eachLayer(function (layer) {
+        shapeCount++;
+        try { totalM2 += turf.area(layer.toGeoJSON()); } catch (e) { /* skip malformed shape */ }
+      });
+    }
+    currentAreaM2 = totalM2;
+    clearBtn.disabled = shapeCount === 0;
+
+    if (totalM2 < 1) {
+      resultEl.classList.remove('visible');
+      currentEstimate = null;
+      setStatus();
+      return;
+    }
+
+    currentEstimate = computeEstimate(totalM2);
+
+    areaM2El.textContent = totalM2.toFixed(0);
+    areaSqftEl.textContent = (totalM2 * 10.7639).toFixed(0);
+    priceEl.textContent = currentEstimate.quoteOnRequest
+      ? 'Quote on request'
+      : '$' + currentEstimate.low + '–$' + currentEstimate.high;
+    resultEl.classList.add('visible');
+    setStatus('Shape captured — trace more area, or use this estimate below.', 'ok');
+  }
+
+  function pickSizeBand(areaM2) {
+    if (areaM2 < 150) return 'Small courtyard (under 150m²)';
+    if (areaM2 <= 400) return 'Medium yard (150–400m²)';
+    if (areaM2 <= 800) return 'Large block (400–800m²)';
+    return 'Extra-large (800m²+)';
+  }
+
+  useBtn.addEventListener('click', function () {
+    if (!currentEstimate || currentAreaM2 < 1) return;
+    document.getElementById('q-area-m2').value = currentAreaM2.toFixed(1);
+    document.getElementById('q-estimate-low').value = currentEstimate.quoteOnRequest ? '' : currentEstimate.low;
+    document.getElementById('q-estimate-high').value = currentEstimate.quoteOnRequest ? '' : currentEstimate.high;
+    document.getElementById('q-size').value = pickSizeBand(currentAreaM2);
+    const suburbInput = document.getElementById('q-suburb');
+    if (!suburbInput.value && addressInput.value) suburbInput.value = addressInput.value;
+    setStatus('Added to your quote request below — scroll down to finish it off.', 'ok');
+    document.getElementById('q-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  async function searchAddress() {
+    const query = addressInput.value.trim();
+    if (!query) return;
+    setStatus('Searching…');
+    searchBtn.disabled = true;
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=au&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('search failed');
+      const results = await res.json();
+      if (!results.length) {
+        setStatus('Could not find that address — try adding suburb and state.', 'error');
+        return;
+      }
+      initMap();
+      map.setView([parseFloat(results[0].lat), parseFloat(results[0].lon)], 20);
+      setStatus('Found it — trace your lawn with the tools on the map.', 'ok');
+    } catch (err) {
+      initMap();
+      setStatus('Address search is unavailable right now — pan and zoom the map manually instead.', 'error');
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  searchBtn.addEventListener('click', searchAddress);
+  addressInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
+  });
+
+  // Lazy-init: don't pull map tiles until the estimator scrolls into view.
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { initMap(); observer.disconnect(); }
+      });
+    }, { rootMargin: '200px' });
+    observer.observe(mapContainer);
+  } else {
+    initMap();
+  }
+})();
+</script>
+
+<script>
+(function () {
+  // ---- Kill switch ----
+  // Reads status.txt (repo root, next to this file). Line 1 must be
+  // exactly "DOWN" to trigger maintenance mode - anything else (including
+  // a missing/unreadable file, a network hiccup, or a typo) fails open so
+  // the real site stays up. Doesn't apply to ?admin, so leads already in
+  // the pipeline stay manageable during an outage.
+  if (new URLSearchParams(location.search).has('admin')) return;
+
+  fetch('status.txt', { cache: 'no-store' })
+    .then(function (res) { return res.ok ? res.text() : ''; })
+    .then(function (text) {
+      const lines = text.split('\n');
+      const flag = (lines[0] || '').trim().toUpperCase();
+      if (flag !== 'DOWN') return;
+      const message = (lines[1] || '').trim() || "We're temporarily offline for maintenance — back shortly.";
+      document.title = 'The Lawn Care — temporarily unavailable';
+      document.body.innerHTML =
+        '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);color:var(--text);font-family:var(--font-body);text-align:center;">' +
+          '<div style="max-width:440px;">' +
+            '<div style="font-family:var(--font-display);font-weight:700;font-size:1.6rem;margin-bottom:14px;">The Lawn Care</div>' +
+            '<p style="color:var(--text-muted);font-size:1.05rem;margin-bottom:14px;">' + message.replace(/[<>&]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]; }) + '</p>' +
+            '<p style="color:var(--text-muted);font-size:0.9rem;">Urgent? Email <a href="mailto:ericho995@gmail.com" style="color:var(--accent-dark);font-weight:700;">ericho995@gmail.com</a></p>' +
+          '</div>' +
+        '</div>';
+    })
+    .catch(function () { /* network error - fail open, real site stays as-is */ });
 })();
 </script>

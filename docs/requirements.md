@@ -1,4 +1,4 @@
-# MowMate — Requirements & Technical Plan
+# The Lawn Care — Requirements & Technical Plan
 
 **Prepared by:** Claude, acting as consultant / tech lead
 **Date:** 5 September 2026 (v1.1 — updated after independent review)
@@ -10,7 +10,7 @@ See `CHANGELOG.md` for what changed between doc/site revisions.
 
 ## 1. Business overview
 
-MowMate is an online lawn mowing service. The long-term model is a two-sided
+The Lawn Care is an online lawn mowing service. The long-term model is a two-sided
 marketplace: customers request a quote and book a mow online; the job is then
 completed either by Eric directly or picked up by an independent mower
 ("gig" contractor) from a pool of vetted operators — similar in shape to
@@ -22,7 +22,7 @@ Uber/Airtasker but scoped to one trade.
   with minimal friction (no phone tag), and give Eric one place to see and
   action every lead.
 - **Secondary, later goal:** let a network of independent mowers claim and
-  complete jobs, with MowMate taking a margin or referral fee.
+  complete jobs, with The Lawn Care taking a margin or referral fee.
 
 ## 2. User roles
 
@@ -39,8 +39,15 @@ Scope agreed with Eric: a real, working marketing + lead-generation site,
 build — see Phase 2/3 below).
 
 **Delivered:**
-- Public marketing site: hero, services, how-it-works, service area
-  (Melbourne live, Sydney flagged "coming soon"), trust section, footer.
+- Public marketing site: hero, services, our-work gallery, how-it-works,
+  service area (Melbourne live, Sydney flagged "coming soon"), reviews,
+  trust section, footer. Hero and gallery use stock photography (Unsplash)
+  as placeholders — **not real photos of completed jobs** — swap for real
+  ones once Eric has a photo or two from actual work.
+- A reviews section with an honest "no reviews yet" state rather than
+  fabricated testimonials (a new business claiming customer quotes it
+  doesn't have is a real fake-review/consumer-law risk, not just a style
+  choice) — ready to populate the moment real reviews exist.
 - A working multi-field quote request form. Submissions are captured to a
   live data store tied to the site (no separate backend needed for this
   phase).
@@ -52,12 +59,20 @@ build — see Phase 2/3 below).
 - A short data-use line next to the quote form ("used only to quote and
   book your mow, never shared or sold") — a stopgap, not a full privacy
   policy; see §7.
+- **Lawn-size estimator:** customer searches their address, satellite
+  imagery loads, and they trace their lawn's outline on the map; the exact
+  traced area (m² / sq ft) and a placeholder instant price range are
+  computed client-side and carried through into the quote submission (and
+  shown on the admin lead card). Built key-less/free for prototype speed —
+  see §4 for the stack and its trade-offs vs. the originally-planned Google
+  Places/paid stack, and the known hosting limitation this introduces
+  below.
 
 **Explicitly NOT in Phase 1:**
 - Payment processing / online checkout.
 - Contractor accounts, onboarding, or job claiming.
-- Automated price quoting (the form captures inputs; Eric prices manually
-  and follows up).
+- A *final* automated price (the estimator gives a ballpark from traced
+  area; Eric still confirms the real price and follows up).
 - SMS/email confirmation automation.
 - A real domain, business registration, or production hosting — this is a
   working prototype Eric can share, refine, and hand to a developer or
@@ -65,15 +80,41 @@ build — see Phase 2/3 below).
 
 ## 4. Phase 2 — quoting & payments (proposed next)
 
-- **Instant price engine:** rules-based quote (lawn size × frequency ×
-  service type → price) replacing manual follow-up.
+- **Instant price engine:** a first version now exists client-side in
+  Phase 1 (see below) using placeholder rates. Turning it into the real
+  thing means Eric setting actual per-m²/frequency/service rates, and
+  probably moving the calculation server-side once money is involved (a
+  client-side price is trivially editable by anyone with devtools before
+  Eric confirms it — fine for a ballpark today, not for a binding quote).
 - **Online payment:** Stripe (AU-native, handles card + Apple/Google Pay)
   charged on booking or on job completion.
 - **Automated notifications:** email/SMS confirmation, reminder before the
   scheduled mow, receipt after completion (e.g. Postmark or Twilio SendGrid
   for email, Twilio for SMS).
-- **Address autocomplete:** Google Places API so customers pick a real,
-  validated address instead of free-text.
+- **Address autocomplete / lawn measurement — built early, free stack:**
+  originally scoped here as Google Places API, but the lawn-size estimator
+  was pulled into Phase 1 using a free, key-less stack instead: OpenStreetMap
+  Nominatim for address search, Esri World Imagery for satellite tiles, and
+  Turf.js for geodesic area calculation. This gets a working prototype
+  today with no Google Cloud billing account, but it's a deliberate
+  trade-off Eric should know about:
+  - **Accuracy:** good enough to sanity-check a customer's self-reported
+    size, not survey-grade. Google's Solar API / high-res aerial imagery
+    would be sharper if measurement precision starts driving disputes over
+    price.
+  - **Nominatim usage policy:** free tier is rate-limited and meant for
+    light/non-commercial-scale use — fine at today's volume, but revisit
+    (self-hosted Nominatim, or Google/Mapbox geocoding) if quote volume
+    grows meaningfully.
+  - **Known hosting limitation:** this feature needs outbound network
+    calls (tiles, geocoding), which the Claude Artifact sandbox blocks —
+    so it cannot run in the same hosted context as the live quote-capture
+    database (which *only* works inside a published Artifact). Today,
+    locally-served: estimator works, quote capture falls back to an email
+    draft; published as an Artifact: quote capture works, estimator can't
+    load tiles. See `README.md`. This tension resolves naturally once Phase
+    2's real static hosting + real backend (below) replaces the Artifact
+    stopgap — that move is now more urgent than "nice to have."
 - **Customer accounts:** order history, saved address, repeat-booking in
   one click.
 
@@ -90,12 +131,12 @@ This is the "jobs picked up by me or any random individual" model in full:
   to the customer.
 - **Ratings & reputation:** customer rates the mower after each job;
   repeated low ratings or no-shows suspend a mower.
-- **Payouts:** MowMate collects payment from the customer, takes a
+- **Payouts:** The Lawn Care collects payment from the customer, takes a
   commission, pays the mower out (Stripe Connect is the standard tool for
   this split-payment model).
 - **Insurance & liability framework:** clear terms on who is liable for
   property damage — almost certainly needs a written agreement with each
-  mower and a small business insurance policy for MowMate itself. **Legal
+  mower and a small business insurance policy for The Lawn Care itself. **Legal
   advice recommended before onboarding any third-party mower** — this is a
   genuine legal/compliance decision, not just a technical one.
 - **Admin/dispatch console:** map view of open jobs, mower locations
@@ -163,13 +204,17 @@ This is the "jobs picked up by me or any random individual" model in full:
 | Payments | — | Stripe + Stripe Connect (for mower payouts) |
 | Notifications | — | Twilio (SMS) + Postmark/SendGrid (email) |
 | Hosting | This artifact link (prototype) | Vercel/Netlify (site) + managed Postgres |
-| Maps/address | Free-text suburb | Google Places Autocomplete API |
+| Maps/address | Leaflet + Esri World Imagery + OSM Nominatim (free, key-less) | Google Places Autocomplete + Solar API, or upgraded Nominatim/imagery if volume/accuracy demands it |
 
 ## 9. Data captured today (Phase 1 quote form)
 
 Each submission stores: name, email, phone, suburb/postcode, lawn size
-band, service frequency, preferred day, notes, submission timestamp, and a
-status field the admin view can update. **Retention/export:** nothing is
+band, how long since it was last mowed, service frequency, preferred day,
+notes, submission timestamp, a status field and a deposit-paid checkbox the
+admin view can update, and — when the customer used the map estimator —
+the traced area in m² and the low/high instant price estimate shown to
+them (or nothing, if the traced area was large enough to be quote-on-
+request). **Retention/export:** nothing is
 deleted automatically today; before migrating to Postgres in Phase 2,
 export every Phase 1 submission and decide a retention period (e.g. delete
 or archive completed jobs after 12 months) rather than carrying it forward
@@ -211,43 +256,67 @@ Not a quote — order-of-magnitude only, to help prioritise:
 
 ## 13. Competitive positioning
 
-MowMate isn't the only way to book a mow — **Airtasker** and **Hipages**
+The Lawn Care isn't the only way to book a mow — **Airtasker** and **Hipages**
 already let people post one-off lawn jobs to a marketplace of providers,
 and plenty of local mowing businesses take bookings by phone or a simple
-contact form. Worth deciding explicitly: what makes MowMate worth choosing
+contact form. Worth deciding explicitly: what makes The Lawn Care worth choosing
 over posting to Airtasker? Candidates: a faster/simpler quote flow, a
 consistent known provider (Eric) rather than a stranger each time, and —
 once Phase 3 ships — a curated, vetted pool rather than an open bidding
 market. This positioning should shape what the marketing copy leads with
 as the site matures.
 
-## 14. Open questions for Eric (decisions needed before Phase 2)
+## 14. Open questions for Eric
 
-1. Final service list and any exclusions (e.g. no ride-on mower jobs, no
-   commercial/strata properties)?
-2. Pricing structure — flat bands by lawn size, or per-square-metre rate?
-3. Business registration status — sole trader with an ABN, or a company?
-   (Affects invoicing, contracts with mowers, insurance — and this is
-   already relevant now that the site is live and taking real names/trading
-   as "MowMate.")
-4. GST — expected turnover in year one, and whether to register voluntarily
-   even if under the $75k threshold (affects how quotes/invoices are worded
-   from the first paid job).
+### Resolved (via business-planning discussion, 6 Sept 2026)
+
+1. **Final service list:** ✅ Standard mow + edge/whipper-snip + hedge trim +
+   green waste. Already matches the site's Services section.
+2. **Pricing structure:** ✅ Band-based by lawn size, plus a surcharge for
+   overgrown lawns. Implemented in `index.html`'s `PRICING` constant and the
+   quote form's new "When was it last mowed?" field — see §4 and the
+   Changelog for the exact bands/surcharges (based on Melbourne market
+   rates researched at the time; revisit once real bookings give actual
+   data).
+3. **Business registration:** ✅ Sole trader, ABN 79 369 208 780.
+4. **Domain:** ✅ `thelawncare.com.au` purchased (GoDaddy, registered
+   6 Sept 2026, order #4179104157). The site is rebranded from "MowMate" to
+   "The Lawn Care" to match. **Hosting is not yet connected** — the domain
+   currently points nowhere; see §4 and `README.md` for why this needs to
+   move off the Claude Artifact model.
+7. **Payment processor / terms:** ✅ Bank transfer, with a deposit required
+   to confirm a booking ($20 or 20% of the quoted price, whichever is
+   higher, within 24 hours of accepting the quote). Implemented as
+   customer-facing copy on the success panel, plus a "Deposit paid"
+   checkbox in the admin view — tracking is manual until Phase 2 payments
+   exist.
+9. **Public liability insurance:** Explicitly deferred by Eric for now
+   ("skip this for now"). Flagging again since it's cheap to say twice: the
+   site still makes no insurance claims (correct, keep it that way), but
+   there is genuinely no cover in place — a single property-damage incident
+   before this is sorted is a real financial exposure. Revisit before
+   taking jobs with any real risk (near windows/cars/pools, steep terrain).
+
+### Still open
+
+4. GST — expected turnover in year one, and whether to register
+   voluntarily even if under the $75k threshold (affects how quotes/
+   invoices are worded from the first paid job).
 5. Target date/volume for expanding into Sydney — does it launch as its own
    pricing zone or identical pricing? (Site copy currently says "timeline
    not yet set" — keep it that vague until this is actually decided.)
 6. Appetite and timeline for onboarding third-party mowers (Phase 3) vs.
    staying solo-operator longer — this materially changes the legal and
    insurance work required.
-7. Preferred payment processor and whether card-on-file recurring billing
-   is wanted for repeat customers.
 8. Is Eric comfortable committing to the "let us know within 24 hours and
    we'll make it right" satisfaction line as an operational promise? It's
    live on the site now — confirm or soften it.
-9. Public liability insurance — does Eric have it in place today? The site
-   no longer claims blanket insurance/vetting (that was corrected — see
-   `CHANGELOG.md`), but this should be resolved for real before any paid
-   job, independent of what the marketing copy says.
+11. **Now more urgent given the real domain purchase:** move off the Claude
+    Artifact and onto real static hosting (Vercel/Netlify/GitHub Pages) so
+    `thelawncare.com.au` can actually point somewhere, and so the estimator
+    (needs live internet access) and the quote database (only works inside
+    a published Artifact today) can both work from the same place. See
+    `README.md` "Running it" and `docs/pre-live-checklist.md`.
 
 ## 15. Success metrics to track once live
 

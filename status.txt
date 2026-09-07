@@ -1,0 +1,25 @@
+LIVE
+We're temporarily offline for maintenance — back shortly.
+-----
+Line 1 must be exactly LIVE or DOWN (all capitals, nothing else on that
+line). This controls whether the public site shows normally or a
+maintenance message to every visitor - takes effect within seconds of
+being saved, no rebuild needed.
+Line 2 is the message customers see while the site shows DOWN - edit it
+to say whatever you want them to read.
+Everything below this point is ignored - only lines 1 and 2 are read.
+
+To use this as a kill switch from your phone: open this file on
+github.com (or the GitHub mobile app), tap the pencil/edit icon, change
+LIVE to DOWN, and commit directly to the main branch. To bring the site
+back, do the same thing in reverse.
+
+Note: this only pauses the public-facing pages - it does NOT touch the
+`?admin` view, so you can still see and manage existing quote requests
+while the site is "down".
+
+This is a soft pause, not a security lockdown. If the site needs to come
+down because of an actual security problem (not just "I want bookings to
+stop for a while"), the reliable option is disabling GitHub Pages entirely
+in the deploy repo's Settings -> Pages, or making that repo private -
+either fully stops the site from being served at all, unlike this file.
