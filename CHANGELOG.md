@@ -6,7 +6,136 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — marketing
+- **`airtasker.html`** — landing page for traffic arriving via Airtasker
+  (profile link / task replies). Reassures repeat Airtasker customers
+  it's the same operator and pitches booking direct next time to skip
+  the platform fee. `noindex`ed and not linked from the main nav/footer
+  on purpose — it's meant to be reached only via the URL Eric puts in
+  his Airtasker profile/replies, not discovered by site visitors or
+  search engines as a separate page.
+- **`docs/marketing-plan.md`** — internal (unlinked) marketing plan:
+  Airtasker channel workflow (incl. turning on Airtasker's own Task
+  Alerts for instant notification of nearby lawn-mowing tasks — the
+  legitimate, ToS-compliant version of "tell me when someone nearby
+  wants a mow"), a ranked list of other free/low-cost channels (Google
+  Business Profile, Facebook groups/Marketplace, Nextdoor, Gumtree,
+  referrals, flyers), and an explicit "why no bots" note: scraping or
+  auto-posting on Airtasker/Facebook/Nextdoor violates their ToS and
+  risks an account ban, so every alert mechanism recommended is each
+  platform's own native notification feature instead.
+
+### Fixed
+- **Auto-highlight greenery tool was invisible.** The overlay canvas was
+  drawing correctly the whole time (confirmed via pixel inspection) but
+  sat at `z-index: 399` while Leaflet's own `.leaflet-map-pane` sits at
+  `z-index: 400` — one level higher, so the highlight rendered underneath
+  the visible map tiles. Bumped to `z-index: 450`. Caught from direct
+  owner feedback ("I'm seeing nothing") rather than my own testing, which
+  had only checked that the area number came out correct, not that the
+  highlight was actually visible — worth remembering for next time.
+
+### Changed
+- **FAQ: home-visit answer corrected.** Previously implied you never need
+  to be home. Now distinguishes street/side-gate access (no) from access
+  that requires going through the garage or house itself (yes, you need
+  to be home or arrange access).
+- **FAQ: refund policy clarified.** "We'll make it right" was ambiguous
+  about whether that included a refund. Now explicit: no refunds, only
+  coming back to fix the job.
+- **Removed the pricing section from the home page** (owner: "looks
+  bad") — full pricing still lives on `services.html`, linked from the
+  Services teaser ("See services & pricing →") instead of being
+  duplicated on the home page.
+
+### Changed — services/pricing clarity + competitor-informed additions
+- **Clear included-vs-extra split on `services.html`.** Owner feedback:
+  the three service cards read as equal parallel options with no
+  indication that only the standard mow is what you're paying for.
+  Restructured into one "Included in every quote" card (Standard mow)
+  followed by a separate "Optional add-ons" section with visible "+$"
+  pricing on each (Edge & whipper snip, Hedge trimming, Green waste
+  removal) — add-on prices are typical-rate placeholders, confirm before
+  relying on them. Edging's old "Bundled with any mow" line was actively
+  wrong given the new instruction that it costs extra — removed.
+- **Quote form:** added explicit add-on checkboxes (Edge & whipper snip,
+  Hedge trimming) mirroring MOW NOW's "select all applicable" pattern
+  (checked via direct competitor visit, see below) instead of relying on
+  the free-text "Anything else?" field to catch these. Added a separate
+  checkbox near the end of the form — "I don't have my own green waste
+  bin" — deliberately with **no dollar figure shown on the form itself**
+  per instruction; the fee is confirmed by Eric when he quotes, not
+  advertised upfront. Both flow into the FormSubmit email and the
+  admin.html lead card.
+- **Added a specials banner**: "$10 off your first mow" on the home page
+  and a matching line on the quote page. **This $10 figure is one I
+  picked, not something Eric specified** — flagging clearly since it's
+  exactly the kind of number this project has a habit of getting wrong by
+  assumption (see the subscription price a few entries up). Confirm or
+  change it before this goes live.
+- **Added an FAQ section** to `services.html` (do I need to be home, rain
+  policy, payment, dissatisfaction, subscription cancellation) — all
+  answers restate facts already established elsewhere on the site, no
+  new claims invented.
+- Competitor research behind these changes: visited MOW NOW
+  (mownow.com.au — multi-select add-on checkboxes on their quote form,
+  FAQ block near pricing, before/after photo storytelling) and Jim's
+  Mowing (jimsmowing.com.au — real testimonials at their scale, a
+  quote-and-win promotion, confirming specials/promos are normal in this
+  market). Not copied wholesale — used to sanity-check which of these
+  patterns actually fit a solo, pre-launch operator versus which only
+  make sense at franchise scale (e.g. skipped fabricated review counts
+  and award badges, which would be false claims here).
+
+### Changed — multi-page rebuild
+- **Split the single `index.html` into a real multi-page site.** Owner
+  feedback: nav links should go to their own page instead of scrolling
+  down a long one. Now: `index.html` (home), `services.html`,
+  `work.html`, `how-it-works.html`, `service-area.html`, `reviews.html`,
+  `quote.html` (estimator + form), `admin.html` (job queue, no longer
+  toggled via `?admin` on the home page), plus the existing
+  `privacy.html`. Shared CSS moved to `assets/styles.css`; the
+  maintenance kill-switch moved to `assets/kill-switch.js`, included on
+  every public page (not `admin.html`, so leads stay manageable during an
+  outage). This is a bigger structural change than anything else in this
+  file so far — test thoroughly before relying on it.
+- **Pricing:** added a $75/month "Mow & Forget" subscription tier
+  alongside the existing per-visit bands, shown on the home page and in
+  full on `services.html`. **This number is Eric's own figure from
+  conversation, not researched like the per-visit bands** — sanity-check
+  it covers costs for the size range it's scoped to (up to ~400m²) before
+  relying on it.
+- **"Our work" gallery:** removed the hedge-themed photo per Eric's
+  request (kept hedge trimming as a service — this was about the photo,
+  not the offering) and replaced the whole set with only images verified
+  to be actually shot in Australia (checked each candidate's location
+  metadata on Unsplash rather than trusting alt text/search relevance,
+  which would happily return non-Australian photos) — Newcastle NSW and
+  Revesby NSW. Hero photo swapped to a verified Perth (Kings Park) shot
+  for the same reason. Fewer, verified-genuine photos over a fuller but
+  unverified set.
+- Added an "arrival & departure updates, before/after photos" trust
+  bullet and a dedicated callout on `services.html` — an operational
+  commitment Eric makes personally (texting customers), not an automated
+  notification system; worded to avoid implying otherwise.
+
 ### Added
+- **Experimental "Auto-highlight greenery" map tool** on `quote.html`,
+  alongside the existing manual Trace/Rectangle tools (not a replacement
+  for them). Click once on the lawn in the satellite view and it
+  flood-fills the connected green-colored region from that point using a
+  simple RGB heuristic (canvas pixel read, capped at 150k pixels), then
+  converts the pixel count to m² via the standard Web Mercator
+  meters-per-pixel formula at the map's current center/zoom. This needed
+  `crossOrigin: true` on **both** Esri tile layers (imagery and the
+  labels overlay) — missing it on just one still taints the canvas and
+  breaks `getImageData` for the whole thing, which is exactly what
+  happened on the first attempt and was caught in testing. Clearly
+  labeled "(beta)" in the UI since color-based detection can't verify
+  against an actual property boundary — a shadow, a green roof, or a
+  neighbor's connected lawn can all throw it off. Falls back to a plain
+  error message (not a broken state) if canvas reading is unavailable in
+  a given browser.
 - `CNAME` file (`thelawncare.com.au`) so GitHub Pages can serve the custom
   domain directly from this repo once Pages is enabled — see
   `docs/pre-live-checklist.md` for the full go-live steps (GoDaddy DNS

@@ -1,0 +1,181 @@
+<meta charset="UTF-8">
+<title>Job Queue — The Lawn Care</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+
+<div class="admin-shell">
+  <div class="admin-head">
+    <div>
+      <a class="back-link" href="index.html">← Back to site</a>
+      <h1>Job queue</h1>
+    </div>
+  </div>
+  <div id="admin-gate" class="admin-gate">
+    <h3 style="margin-bottom:10px;">Private area</h3>
+    <p>This is a stopgap passphrase, not real login security — anyone with the passphrase (or access to this file) can get in. Treat this link as private and don't post it publicly until Phase 2 adds real accounts.</p>
+    <form id="admin-gate-form">
+      <input type="password" id="admin-gate-input" placeholder="Passphrase" autocomplete="off">
+      <button class="btn btn-primary btn-block" type="submit">Enter</button>
+      <span class="gate-error" id="admin-gate-error"></span>
+    </form>
+  </div>
+  <div id="admin-content" style="display:none;">
+    <div id="admin-list"></div>
+    <p class="admin-note">This is the Phase 1 admin view: every quote request lands here so you can call and quote manually, and track it through to completion. Assigning jobs to other mowers is scoped as Phase 3 in the requirements doc. Note: this list only populates when this page is opened as a published Claude Artifact — on real hosting (GitHub Pages), quote requests arrive by email instead (see `sendViaFormBackend` in `quote.html`).</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  const STATUS_VALUES = ['New', 'Contacted', 'Scheduled', 'Completed'];
+  // Stopgap only — not real auth. Anyone who reads this file's source sees the
+  // passphrase. It exists purely so the admin view isn't wide open to a casual
+  // click on the footer link. Replace with real accounts in Phase 2.
+  const ADMIN_PASSPHRASE = 'Mowtown-Eric-2026!';
+
+  let db = null;
+  let quotesCol = null;
+
+  async function initDb() {
+    if (!window.claude || !window.claude.use) return;
+    try {
+      db = await window.claude.use('db');
+      if (db) quotesCol = db.collection('quotes');
+    } catch (e) { db = null; }
+  }
+
+  function startAdminData() {
+    if (quotesCol) {
+      subscribeAdmin();
+    } else {
+      document.getElementById('admin-list').innerHTML =
+        '<div class="admin-empty">Job queue data isn\'t available in this view — open this page from your Claude account to see live submissions, or check email for FormSubmit-delivered requests.</div>';
+    }
+  }
+
+  const gate = document.getElementById('admin-gate');
+  const content = document.getElementById('admin-content');
+  const gateForm = document.getElementById('admin-gate-form');
+  const gateInput = document.getElementById('admin-gate-input');
+  const gateError = document.getElementById('admin-gate-error');
+
+  function unlockAdmin() {
+    gate.style.display = 'none';
+    content.style.display = 'block';
+    initDb().catch(function () {}).then(startAdminData);
+  }
+
+  if (sessionStorage.getItem('lawncare_admin_ok') === '1') {
+    unlockAdmin();
+  } else {
+    gateForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (gateInput.value === ADMIN_PASSPHRASE) {
+        sessionStorage.setItem('lawncare_admin_ok', '1');
+        unlockAdmin();
+      } else {
+        gateError.textContent = 'That passphrase isn\'t right.';
+        gateInput.value = '';
+        gateInput.focus();
+      }
+    });
+  }
+
+  function subscribeAdmin() {
+    const listEl = document.getElementById('admin-list');
+    quotesCol.orderBy('createdAt', 'desc').limit(100).onSnapshot(function (snap) {
+      if (snap.empty) {
+        listEl.innerHTML = '<div class="admin-empty">No quote requests yet — once someone submits the form, it shows up here.</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      snap.docs.forEach(function (doc) {
+        const d = doc.data();
+        const safeId = escapeHtml(doc.id);
+        const safeStatus = STATUS_VALUES.includes(d.status) ? d.status : 'New';
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        const when = d.createdAt ? new Date(d.createdAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+        card.innerHTML = `
+          <div class="lead-main">
+            <h3>${escapeHtml(d.name || 'Unnamed')} — ${escapeHtml(d.suburb || '')}</h3>
+            <div class="lead-meta">${escapeHtml(d.phone || '')} · ${escapeHtml(d.email || '')} · submitted ${when}</div>
+            <div class="lead-tags">
+              <span>${escapeHtml(d.size || '')}</span>
+              ${d.lastMowed ? `<span>Last mowed: ${escapeHtml(d.lastMowed)}</span>` : ''}
+              <span>${escapeHtml(d.frequency || '')}</span>
+              <span>${escapeHtml(d.day || 'Flexible')}</span>
+            </div>
+            ${d.areaM2 ? `<div class="lead-notes">Mapped lawn area: ${escapeHtml(String(Math.round(Number(d.areaM2))))} m² · Est. ${d.estimateLow ? `$${escapeHtml(String(d.estimateLow))}–$${escapeHtml(String(d.estimateHigh))}` : 'quote on request'} per standard mow</div>` : ''}
+            ${(d.addonEdging || d.addonHedge) ? `<div class="lead-notes">Add-ons: ${[d.addonEdging, d.addonHedge].filter(Boolean).map(escapeHtml).join(', ')}</div>` : ''}
+            ${d.noGreenBin ? `<div class="lead-notes">⚠ No own green waste bin — add removal fee</div>` : ''}
+            ${d.extras ? `<div class="lead-notes">Extras: ${escapeHtml(d.extras)}</div>` : ''}
+            ${d.notes ? `<div class="lead-notes">"${escapeHtml(d.notes)}"</div>` : ''}
+          </div>
+          <div>
+            <label for="status-${safeId}" style="font-size:0.8rem;font-weight:700;color:var(--text-muted);">Status</label>
+            <select id="status-${safeId}" class="status-select status-${safeStatus}" data-id="${safeId}">
+              ${STATUS_VALUES.map(s => `<option value="${s}" ${safeStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:0.85rem;font-weight:700;">
+              <input type="checkbox" id="deposit-${safeId}" class="deposit-check" data-id="${safeId}" ${d.depositPaid ? 'checked' : ''}>
+              Deposit paid
+            </label>
+          </div>`;
+        listEl.appendChild(card);
+      });
+      listEl.querySelectorAll('.status-select').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+          const id = sel.dataset.id;
+          const previous = sel.dataset.prev || sel.value;
+          const next = sel.value;
+          sel.className = 'status-select status-' + next;
+          sel.disabled = true;
+          quotesCol.doc(id).update({ status: next }).then(function () {
+            sel.dataset.prev = next;
+            sel.disabled = false;
+          }).catch(function () {
+            sel.value = previous;
+            sel.className = 'status-select status-' + previous;
+            sel.disabled = false;
+            const warn = document.createElement('div');
+            warn.textContent = 'Could not save that status change — try again.';
+            warn.style.cssText = 'color:var(--accent);font-size:0.78rem;margin-top:6px;';
+            sel.after(warn);
+            setTimeout(function () { warn.remove(); }, 4000);
+          });
+        });
+      });
+      listEl.querySelectorAll('.deposit-check').forEach(function (checkbox) {
+        checkbox.addEventListener('change', function () {
+          const id = checkbox.dataset.id;
+          const next = checkbox.checked;
+          checkbox.disabled = true;
+          quotesCol.doc(id).update({ depositPaid: next }).then(function () {
+            checkbox.disabled = false;
+          }).catch(function () {
+            checkbox.checked = !next;
+            checkbox.disabled = false;
+            const warn = document.createElement('div');
+            warn.textContent = 'Could not save that — try again.';
+            warn.style.cssText = 'color:var(--accent);font-size:0.78rem;margin-top:6px;';
+            checkbox.parentElement.after(warn);
+            setTimeout(function () { warn.remove(); }, 4000);
+          });
+        });
+      });
+    }, function () {
+      listEl.innerHTML = '<div class="admin-empty">Could not load the job queue right now.</div>';
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>

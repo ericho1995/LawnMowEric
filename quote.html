@@ -1,0 +1,645 @@
+<meta charset="UTF-8">
+<title>Get a Quote — The Lawn Care</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+
+<header class="site">
+  <div class="nav">
+    <a class="logo" href="index.html">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19c3-1 5-1 8 0s5 1 8 0" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M6 19V9m6 10V6m6 13v-7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      The Lawn Care
+    </a>
+    <nav class="links">
+      <a href="services.html">Services</a>
+      <a href="work.html">Our work</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="service-area.html">Service area</a>
+      <a href="reviews.html">Reviews</a>
+    </nav>
+    <a class="btn btn-primary nav-cta" href="quote.html" aria-current="page">Get a quote</a>
+  </div>
+</header>
+
+<section style="padding-top:56px;">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Get a quote</span>
+      <h2>Get your quote request in</h2>
+      <p>Fill this in and we'll come back to you within one business day with a price and a suggested date. 🎉 First time booking? Mention it and get $10 off.</p>
+    </div>
+
+    <div class="estimator">
+      <div class="estimator-head">
+        <div>
+          <h3>🛰️ Draw your lawn for an instant size &amp; price estimate</h3>
+          <p>Find your address, then trace the mowable area on the satellite view. We'll calculate the exact area and give you a ballpark price on the spot — optional, but it saves back-and-forth.</p>
+        </div>
+      </div>
+      <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
+      <div class="estimator-search">
+        <input type="text" id="lawn-address" placeholder="Type your address, e.g. 12 Smith St, Brunswick VIC" autocomplete="off">
+        <button type="button" class="btn btn-ghost" id="lawn-address-search">Find address</button>
+      </div>
+      <div id="lawn-map"></div>
+      <div class="estimator-step" style="margin-top:16px;"><span class="estimator-step-num">2</span> Mark your lawn</div>
+      <div class="estimator-draw-controls">
+        <button type="button" class="btn btn-primary" id="draw-magic-btn">🪄 Auto-highlight greenery (beta)</button>
+        <button type="button" class="btn btn-ghost" id="draw-polygon-btn">✏️ Trace my lawn shape</button>
+        <button type="button" class="btn btn-ghost" id="draw-rect-btn">▭ Draw a simple rectangle</button>
+        <button type="button" class="btn btn-ghost" id="draw-undo-btn" disabled>↩ Undo last point</button>
+        <button type="button" class="btn btn-ghost" id="draw-clear-btn" disabled>🗑 Clear</button>
+      </div>
+      <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Easiest: click "Auto-highlight greenery", then click once on your lawn. If it doesn't look right, use Trace or Rectangle instead for full control.</div>
+      <div class="estimator-result" id="estimator-result">
+        <div class="figures">
+          <div><b id="estimator-area-m2">–</b><span>m² traced</span></div>
+          <div><b id="estimator-area-sqft">–</b><span>sq ft</span></div>
+          <div><b id="estimator-price">–</b><span>est. per standard mow</span></div>
+        </div>
+        <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
+      </div>
+      <p class="estimator-note">Estimate only, based on traced/highlighted area for a regularly-mowed lawn — final price is confirmed by Eric before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. The auto-highlight tool is experimental (color-based detection, not verified against your actual property boundary) — always double check the figure looks right. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+    </div>
+
+    <div class="quote-wrap">
+      <form id="quote-form">
+        <input type="hidden" id="q-area-m2" name="areaM2">
+        <input type="hidden" id="q-estimate-low" name="estimateLow">
+        <input type="hidden" id="q-estimate-high" name="estimateHigh">
+        <div class="quote-grid">
+          <div class="field">
+            <label for="q-name">Full name</label>
+            <input id="q-name" name="name" type="text" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="q-phone">Phone</label>
+            <input id="q-phone" name="phone" type="tel" required autocomplete="tel">
+          </div>
+          <div class="field">
+            <label for="q-email">Email</label>
+            <input id="q-email" name="email" type="email" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="q-suburb">Suburb / postcode</label>
+            <input id="q-suburb" name="suburb" type="text" placeholder="e.g. Brunswick, 3056" required>
+          </div>
+          <div class="field">
+            <label for="q-size">Lawn size<span class="hint"> — or use the map above for an exact figure</span></label>
+            <select id="q-size" name="size" required>
+              <option value="">Select one…</option>
+              <option>Small courtyard (under 150m²)</option>
+              <option>Medium yard (150–400m²)</option>
+              <option>Large block (400–800m²)</option>
+              <option>Extra-large (800m²+)</option>
+              <option>Not sure — happy to estimate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-last-mowed">When was it last mowed?</label>
+            <select id="q-last-mowed" name="lastMowed">
+              <option value="0–2 weeks (regularly maintained)">0–2 weeks (regularly maintained)</option>
+              <option value="2–4 weeks">2–4 weeks</option>
+              <option value="4–8 weeks">4–8 weeks</option>
+              <option value="8+ weeks / very overgrown">8+ weeks / very overgrown</option>
+              <option value="Not sure">Not sure</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-frequency">How often?</label>
+            <select id="q-frequency" name="frequency" required>
+              <option value="">Select one…</option>
+              <option>One-off mow</option>
+              <option>Weekly</option>
+              <option>Fortnightly</option>
+              <option>Monthly</option>
+              <option>Monthly subscription ($75/mo)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-day">Preferred day</label>
+            <select id="q-day" name="day">
+              <option value="Flexible">Flexible / no preference</option>
+              <option>Weekday morning</option>
+              <option>Weekday afternoon</option>
+              <option>Weekend</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Add-ons<span class="hint"> — optional, extra cost, confirmed when we quote (see <a href="services.html" style="color:var(--accent-dark);">full pricing</a>)</span></label>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.92rem;">
+                <input type="checkbox" name="addonEdging" value="Edge & whipper snip"> Edge &amp; whipper snip (+$15–25)
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.92rem;">
+                <input type="checkbox" name="addonHedge" value="Hedge trimming"> Hedge trimming (POA)
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="q-extras">Anything else?<span class="hint"> — optional</span></label>
+            <input id="q-extras" name="extras" type="text" placeholder="e.g. dog in the yard, prefer mornings">
+          </div>
+          <div class="field full">
+            <label for="q-notes">Gate code, access notes, anything we should know</label>
+            <textarea id="q-notes" name="notes" placeholder="Side gate is unlocked, watch for the sprinkler head near the fence…"></textarea>
+          </div>
+          <div class="field full">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+              <input type="checkbox" id="q-no-bin" name="noGreenBin" value="yes">
+              I don't have my own green waste bin (clippings would need to be taken away)
+            </label>
+          </div>
+        </div>
+        <div class="form-foot">
+          <span class="form-note">We'll only use these details to quote and book your mow — never shared or sold.</span>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span id="quote-status" role="status" aria-live="polite"></span>
+            <button class="btn btn-primary" type="submit" id="quote-submit">Send my request</button>
+          </div>
+        </div>
+      </form>
+      <div class="success-panel" id="quote-success" style="display:none;" role="status" aria-live="polite">
+        <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Request received, <span id="success-name">there</span>.</h3>
+        <p>We'll be in touch within one business day with a quote and a suggested date. To lock in your booking, a small deposit by bank transfer is required within 24 hours of accepting your quote — details come with it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="logo"><span class="logo-mark" style="width:28px;height:28px;"></span>The Lawn Care</div>
+      <div class="footer-links">
+        <a href="services.html">Services</a>
+        <a href="work.html">Our work</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="service-area.html">Service area</a>
+        <a href="reviews.html">Reviews</a>
+        <a href="quote.html">Get a quote</a>
+        <a href="privacy.html">Privacy policy</a>
+      </div>
+    </div>
+    <div class="footer-fine">
+      <span>© 2026 The Lawn Care · ABN 79 369 208 780 · Melbourne, VIC</span>
+      <a href="admin.html">Admin (private link)</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/kill-switch.js"></script>
+
+<script>
+(function () {
+  // ---- Quote form submission ----
+  const form = document.getElementById('quote-form');
+  const statusEl = document.getElementById('quote-status');
+  const successPanel = document.getElementById('quote-success');
+  let fallbackLink = null;
+
+  // Real automatic capture: FormSubmit.co forwards the submission straight
+  // to Eric's inbox, no account/signup needed. One-time gotcha: the very
+  // first submission to a new site+email combo triggers a "confirm this
+  // form" email from FormSubmit instead of delivering the real content -
+  // Eric has to click that once before real submissions start arriving.
+  async function sendViaFormBackend(data) {
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/ericho995@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          _subject: 'New quote request - The Lawn Care',
+          _replyto: data.email,
+          _captcha: 'false',
+          _template: 'table'
+        })
+      });
+      return res.ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    const submitBtn = document.getElementById('quote-submit');
+    submitBtn.disabled = true;
+    statusEl.dataset.state = '';
+    statusEl.textContent = 'Sending…';
+    if (fallbackLink) { fallbackLink.remove(); fallbackLink = null; }
+
+    const sent = await sendViaFormBackend(data);
+    if (sent) {
+      form.style.display = 'none';
+      document.getElementById('success-name').textContent = data.name || 'there';
+      successPanel.style.display = 'block';
+      submitBtn.disabled = false;
+      return;
+    }
+    statusEl.dataset.state = 'error';
+    statusEl.textContent = "Couldn't send that automatically — email us instead ↴";
+    const body = encodeURIComponent(
+      `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSuburb: ${data.suburb}\nLawn size: ${data.size}${data.areaM2 ? ` (mapped: ${Math.round(data.areaM2)}m², est. $${data.estimateLow}-$${data.estimateHigh})` : ''}\nLast mowed: ${data.lastMowed || 'Not sure'}\nFrequency: ${data.frequency}\nPreferred day: ${data.day}\nAdd-ons: ${[data.addonEdging, data.addonHedge].filter(Boolean).join(', ') || 'None selected'}\nNo own green waste bin: ${data.noGreenBin ? 'Yes' : 'No'}\nExtras: ${data.extras || '-'}\nNotes: ${data.notes || '-'}`
+    );
+    fallbackLink = document.createElement('a');
+    fallbackLink.href = `mailto:ericho995@gmail.com?subject=The Lawn Care quote request&body=${body}`;
+    fallbackLink.textContent = 'Open email draft';
+    fallbackLink.className = 'btn btn-ghost';
+    fallbackLink.style.marginLeft = '10px';
+    statusEl.after(fallbackLink);
+    submitBtn.disabled = false;
+  });
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/7.4.0/turf.min.js"></script>
+<script>
+(function () {
+  // ---- Pricing rules ----
+  // Base bands from Melbourne market research (Sept 2026) — see
+  // docs/requirements.md. Covers a standard mow only; edging, hedging,
+  // green waste and access surcharges are quoted separately.
+  const PRICING = {
+    bands: [
+      { max: 150, low: 50, high: 65 },
+      { max: 400, low: 70, high: 90 },
+      { max: 800, low: 95, high: 130 }
+      // 800m²+ is quote-on-request — no fixed band.
+    ]
+  };
+
+  function computeEstimate(areaM2) {
+    const band = PRICING.bands.find(function (b) { return areaM2 <= b.max; });
+    if (!band) return { quoteOnRequest: true };
+    return { low: band.low, high: band.high };
+  }
+
+  const mapContainer = document.getElementById('lawn-map');
+  if (!mapContainer) return;
+
+  const statusEl = document.getElementById('estimator-status');
+  const resultEl = document.getElementById('estimator-result');
+  const areaM2El = document.getElementById('estimator-area-m2');
+  const areaSqftEl = document.getElementById('estimator-area-sqft');
+  const priceEl = document.getElementById('estimator-price');
+  const useBtn = document.getElementById('estimator-use');
+  const addressInput = document.getElementById('lawn-address');
+  const searchBtn = document.getElementById('lawn-address-search');
+  const polygonBtn = document.getElementById('draw-polygon-btn');
+  const rectBtn = document.getElementById('draw-rect-btn');
+  const undoBtn = document.getElementById('draw-undo-btn');
+  const clearBtn = document.getElementById('draw-clear-btn');
+  const magicBtn = document.getElementById('draw-magic-btn');
+
+  const DEFAULT_HINT = 'Easiest: click "Auto-highlight greenery", then click once on your lawn. If it doesn\'t look right, use Trace or Rectangle instead for full control.';
+  const MIN_DRAW_ZOOM = 18;
+
+  let map = null;
+  let drawnItems = null;
+  let polygonHandler = null;
+  let rectangleHandler = null;
+  let activeHandler = null;
+  let magicMode = false;
+  let magicCanvas = null;
+  let magicAreaM2 = 0;
+  let currentAreaM2 = 0;
+  let currentEstimate = null;
+
+  function setStatus(text, state) {
+    statusEl.textContent = text || DEFAULT_HINT;
+    if (state) statusEl.dataset.state = state; else statusEl.removeAttribute('data-state');
+  }
+
+  function bindRemovePopup(layer) {
+    const wrap = document.createElement('div');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-ghost';
+    btn.style.cssText = 'padding:6px 12px;font-size:0.8rem;';
+    btn.textContent = 'Remove this shape';
+    btn.addEventListener('click', function () {
+      drawnItems.removeLayer(layer);
+      map.closePopup();
+      recalcArea();
+    });
+    wrap.appendChild(btn);
+    layer.bindPopup(wrap);
+  }
+
+  function setDrawingState(isDrawing) {
+    polygonBtn.classList.toggle('active', isDrawing && activeHandler === polygonHandler);
+    rectBtn.classList.toggle('active', isDrawing && activeHandler === rectangleHandler);
+    undoBtn.disabled = !(isDrawing && activeHandler === polygonHandler);
+    if (!isDrawing) activeHandler = null;
+  }
+
+  function ensureCloseZoom() {
+    if (map.getZoom() < MIN_DRAW_ZOOM) {
+      map.setZoom(19);
+      setStatus('Zoomed in closer first, for a more accurate result.', 'ok');
+    }
+  }
+
+  function clearMagicOverlay() {
+    magicMode = false;
+    magicAreaM2 = 0;
+    magicBtn.classList.remove('active');
+    if (magicCanvas) {
+      const ctx = magicCanvas.getContext('2d');
+      ctx.clearRect(0, 0, magicCanvas.width, magicCanvas.height);
+    }
+  }
+
+  function initMap() {
+    if (map) return;
+    map = L.map(mapContainer, { center: [-37.8136, 144.9631], zoom: 13 });
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 20,
+      crossOrigin: true,
+      attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
+    }).addTo(map);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 20,
+      opacity: 0.9,
+      crossOrigin: true
+    }).addTo(map);
+
+    drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    polygonHandler = new L.Draw.Polygon(map, {
+      allowIntersection: false,
+      showArea: true,
+      shapeOptions: { color: '#FF6A1A', weight: 3 }
+    });
+    rectangleHandler = new L.Draw.Rectangle(map, {
+      shapeOptions: { color: '#FF6A1A', weight: 3 }
+    });
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+      clearMagicOverlay();
+      bindRemovePopup(e.layer);
+      drawnItems.addLayer(e.layer);
+      recalcArea();
+    });
+    map.on(L.Draw.Event.DRAWSTART, function () { setDrawingState(true); });
+    map.on(L.Draw.Event.DRAWSTOP, function () { setDrawingState(false); });
+
+    magicCanvas = document.createElement('canvas');
+    // Leaflet's own .leaflet-map-pane sits at z-index 400 (and its tile/overlay
+    // panes nest inside that stacking context) - this overlay must sit above
+    // that whole pane, not just above the tile pane's own z-index:200, or it
+    // renders invisibly underneath the visible map.
+    magicCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:450;';
+    mapContainer.appendChild(magicCanvas);
+
+    map.on('click', function (e) {
+      if (!magicMode) return;
+      magicMode = false;
+      magicBtn.classList.remove('active');
+      runMagicWand(e.containerPoint.x, e.containerPoint.y);
+    });
+  }
+
+  function runMagicWand(clickX, clickY) {
+    try {
+      const size = map.getSize();
+      const w = Math.round(size.x), h = Math.round(size.y);
+      const srcCanvas = document.createElement('canvas');
+      srcCanvas.width = w; srcCanvas.height = h;
+      const ctx = srcCanvas.getContext('2d', { willReadFrequently: true });
+
+      const mapRect = mapContainer.getBoundingClientRect();
+      const tileImgs = mapContainer.querySelectorAll('.leaflet-tile-pane .leaflet-tile-loaded');
+      tileImgs.forEach(function (img) {
+        const r = img.getBoundingClientRect();
+        try {
+          ctx.drawImage(img, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
+        } catch (e) { /* one bad tile shouldn't kill the whole read */ }
+      });
+
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      function isGreen(idx) {
+        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+        return g > r + 8 && g > b + 5 && g > 45;
+      }
+
+      const startX = Math.round(clickX), startY = Math.round(clickY);
+      if (startX < 0 || startY < 0 || startX >= w || startY >= h) return;
+      const startPx = (startY * w + startX) * 4;
+      if (!isGreen(startPx)) {
+        setStatus("That spot doesn't look like lawn to the auto-detector — try clicking more precisely on the grass, or use Trace/Rectangle instead.", 'error');
+        return;
+      }
+
+      const visited = new Uint8Array(w * h);
+      const mask = new Uint8Array(w * h);
+      const stack = [[startX, startY]];
+      visited[startY * w + startX] = 1;
+      let count = 0;
+      const maxPixels = 150000;
+
+      while (stack.length && count < maxPixels) {
+        const point = stack.pop();
+        const x = point[0], y = point[1];
+        const idx = y * w + x;
+        mask[idx] = 1;
+        count++;
+        const neighbors = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]];
+        for (let i = 0; i < 4; i++) {
+          const nx = neighbors[i][0], ny = neighbors[i][1];
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          const nIdx = ny * w + nx;
+          if (visited[nIdx]) continue;
+          visited[nIdx] = 1;
+          if (isGreen(nIdx * 4)) stack.push([nx, ny]);
+        }
+      }
+
+      magicCanvas.width = w; magicCanvas.height = h;
+      const octx = magicCanvas.getContext('2d');
+      octx.clearRect(0, 0, w, h);
+      const outData = octx.createImageData(w, h);
+      for (let i = 0; i < mask.length; i++) {
+        if (mask[i]) {
+          outData.data[i * 4] = 255;
+          outData.data[i * 4 + 1] = 106;
+          outData.data[i * 4 + 2] = 26;
+          outData.data[i * 4 + 3] = 120;
+        }
+      }
+      octx.putImageData(outData, 0, 0);
+
+      const lat = map.getCenter().lat;
+      const zoom = map.getZoom();
+      const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
+      const areaM2 = count * metersPerPixel * metersPerPixel;
+
+      magicAreaM2 = areaM2;
+      currentAreaM2 = areaM2;
+      currentEstimate = computeEstimate(areaM2);
+      clearBtn.disabled = false;
+
+      areaM2El.textContent = areaM2.toFixed(0);
+      areaSqftEl.textContent = (areaM2 * 10.7639).toFixed(0);
+      priceEl.textContent = currentEstimate.quoteOnRequest ? 'Quote on request' : '$' + currentEstimate.low + '–$' + currentEstimate.high;
+      resultEl.classList.add('visible');
+
+      if (count >= maxPixels) {
+        setStatus('That highlighted area is very large and was capped — trace it manually instead for an accurate figure.', 'error');
+      } else {
+        setStatus('Auto-highlighted the green area around your click (beta) — check it looks right, or use Trace/Rectangle if not.', 'ok');
+      }
+    } catch (err) {
+      setStatus("Couldn't auto-detect from this map view (browser restriction) — use Trace or Rectangle instead.", 'error');
+    }
+  }
+
+  magicBtn.addEventListener('click', function () {
+    initMap();
+    if (activeHandler) { activeHandler.disable(); activeHandler = null; setDrawingState(false); }
+    ensureCloseZoom();
+    magicMode = true;
+    magicBtn.classList.add('active');
+    setStatus('Click once on your lawn in the map above.', 'ok');
+  });
+
+  polygonBtn.addEventListener('click', function () {
+    initMap();
+    clearMagicOverlay();
+    if (activeHandler) activeHandler.disable();
+    ensureCloseZoom();
+    activeHandler = polygonHandler;
+    polygonHandler.enable();
+    setStatus('Click points around the edge of your lawn — click the first point again (or double-click) to close the shape.');
+  });
+
+  rectBtn.addEventListener('click', function () {
+    initMap();
+    clearMagicOverlay();
+    if (activeHandler) activeHandler.disable();
+    ensureCloseZoom();
+    activeHandler = rectangleHandler;
+    rectangleHandler.enable();
+    setStatus('Click and drag a rectangle over your lawn.');
+  });
+
+  undoBtn.addEventListener('click', function () {
+    if (activeHandler === polygonHandler) {
+      try { polygonHandler.deleteLastVertex(); } catch (e) { /* nothing to undo */ }
+    }
+  });
+
+  clearBtn.addEventListener('click', function () {
+    clearMagicOverlay();
+    if (drawnItems) drawnItems.clearLayers();
+    recalcArea();
+  });
+
+  function recalcArea() {
+    let totalM2 = magicAreaM2;
+    let shapeCount = magicAreaM2 > 0 ? 1 : 0;
+    if (drawnItems) {
+      drawnItems.eachLayer(function (layer) {
+        shapeCount++;
+        try { totalM2 += turf.area(layer.toGeoJSON()); } catch (e) { /* skip malformed shape */ }
+      });
+    }
+    currentAreaM2 = totalM2;
+    clearBtn.disabled = shapeCount === 0;
+
+    if (totalM2 < 1) {
+      resultEl.classList.remove('visible');
+      currentEstimate = null;
+      setStatus();
+      return;
+    }
+
+    currentEstimate = computeEstimate(totalM2);
+
+    areaM2El.textContent = totalM2.toFixed(0);
+    areaSqftEl.textContent = (totalM2 * 10.7639).toFixed(0);
+    priceEl.textContent = currentEstimate.quoteOnRequest
+      ? 'Quote on request'
+      : '$' + currentEstimate.low + '–$' + currentEstimate.high;
+    resultEl.classList.add('visible');
+    setStatus('Shape captured — trace more area, or use this estimate below.', 'ok');
+  }
+
+  function pickSizeBand(areaM2) {
+    if (areaM2 < 150) return 'Small courtyard (under 150m²)';
+    if (areaM2 <= 400) return 'Medium yard (150–400m²)';
+    if (areaM2 <= 800) return 'Large block (400–800m²)';
+    return 'Extra-large (800m²+)';
+  }
+
+  useBtn.addEventListener('click', function () {
+    if (!currentEstimate || currentAreaM2 < 1) return;
+    document.getElementById('q-area-m2').value = currentAreaM2.toFixed(1);
+    document.getElementById('q-estimate-low').value = currentEstimate.quoteOnRequest ? '' : currentEstimate.low;
+    document.getElementById('q-estimate-high').value = currentEstimate.quoteOnRequest ? '' : currentEstimate.high;
+    document.getElementById('q-size').value = pickSizeBand(currentAreaM2);
+    const suburbInput = document.getElementById('q-suburb');
+    if (!suburbInput.value && addressInput.value) suburbInput.value = addressInput.value;
+    setStatus('Added to your quote request below — scroll down to finish it off.', 'ok');
+    document.getElementById('q-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  async function searchAddress() {
+    const query = addressInput.value.trim();
+    if (!query) return;
+    setStatus('Searching…');
+    searchBtn.disabled = true;
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=au&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('search failed');
+      const results = await res.json();
+      if (!results.length) {
+        setStatus('Could not find that address — try adding suburb and state.', 'error');
+        return;
+      }
+      initMap();
+      map.setView([parseFloat(results[0].lat), parseFloat(results[0].lon)], 20);
+      setStatus('Found it — click "Auto-highlight greenery" or trace your lawn manually.', 'ok');
+    } catch (err) {
+      initMap();
+      setStatus('Address search is unavailable right now — pan and zoom the map manually instead.', 'error');
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  searchBtn.addEventListener('click', searchAddress);
+  addressInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
+  });
+
+  // Lazy-init: don't pull map tiles until the estimator scrolls into view.
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { initMap(); observer.disconnect(); }
+      });
+    }, { rootMargin: '200px' });
+    observer.observe(mapContainer);
+  } else {
+    initMap();
+  }
+})();
+</script>

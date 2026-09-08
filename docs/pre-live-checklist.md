@@ -34,25 +34,22 @@ the only "secret" was the admin passphrase, which has been changed and
 should be treated as a stopgap either way (see below) — so going public is
 low-risk here, but it's Eric's call to confirm before it's flipped.
 
-- [ ] Confirm going public (or confirm you already have GitHub Pro, which
-      allows Pages on a private repo instead)
-- [ ] In the repo → Settings → Pages: Source = "Deploy from a branch",
-      Branch = `master` / `(root)`. A `CNAME` file with
-      `thelawncare.com.au` is already committed, so GitHub will offer it
-      as the custom domain automatically — tick "Enforce HTTPS" once the
-      cert issues (can take up to ~24h after DNS below is live).
-- [ ] At GoDaddy (DNS for `thelawncare.com.au`): add these records (GitHub
-      Pages' documented apex IPs) so both the bare domain and `www` work:
-      | Type | Name | Value |
-      |---|---|---|
-      | A | @ | 185.199.108.153 |
-      | A | @ | 185.199.109.153 |
-      | A | @ | 185.199.110.153 |
-      | A | @ | 185.199.111.153 |
-      | CNAME | www | ericho1995.github.io |
-      Remove any existing "parked page" A/CNAME record GoDaddy put there
-      by default first. DNS can take anywhere from minutes to a few hours
-      to propagate.
+- [x] Repo made public — confirmed by Eric, 7 Sept 2026.
+- [x] GitHub Pages enabled on `master` / `(root)` — confirmed via API,
+      status `built`, custom domain `thelawncare.com.au` already recognized.
+- [x] **DNS at GoDaddy — done, confirmed 8 Sept 2026.** Both
+      `thelawncare.com.au` and `www.thelawncare.com.au` now resolve to
+      GitHub Pages' four apex IPs (185.199.108-111.153), and
+      `http://thelawncare.com.au` serves the real site (200 OK) from
+      GitHub's edge.
+- [ ] **HTTPS cert — in progress, not a DNS problem.** `https://` currently
+      fails the TLS handshake (cert doesn't match the domain yet) — this is
+      GitHub still issuing the Let's Encrypt cert for the custom domain,
+      which only kicks off once it sees correct DNS and can take minutes up
+      to ~24h. If it's still failing after 24h with DNS confirmed correct:
+      in repo Settings → Pages, remove the custom domain, save, then
+      re-add `thelawncare.com.au` to force GitHub to re-request the cert.
+      Once issued, tick "Enforce HTTPS" in the same settings page.
 - [ ] First real quote submission will trigger a "confirm this form" email
       from FormSubmit to `ericho995@gmail.com` — click it once, or every
       submission after is silently swallowed. (Checked: no such email has
@@ -88,7 +85,7 @@ low-risk here, but it's Eric's call to confirm before it's flipped.
       done (new value given to Eric directly, not repeated here since this
       file may end up in a public repo — see the hosting section above).
       Still just a client-side gate, not real auth (see `docs/requirements.md`
-      §7) — change it again anytime from `index.html`'s `ADMIN_PASSPHRASE`.
+      §7) — change it again anytime from `admin.html`'s `ADMIN_PASSPHRASE`.
 
 ## Nice-to-have before launch, not blocking
 
