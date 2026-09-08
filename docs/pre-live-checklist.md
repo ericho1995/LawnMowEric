@@ -93,3 +93,43 @@ low-risk here, but it's Eric's call to confirm before it's flipped.
   jobs once there are a few
 - Add the "Deposit paid" field to whatever bookkeeping Eric already uses,
   so it isn't only tracked in the admin view
+
+## New from the 2026-09-08 critical review — needs Eric
+
+Everything below was flagged in a critical review of the live site and
+either fixed in code already or needs an action only Eric can take
+(an account, a business decision, or physical testing). Code-side fixes
+are in `CHANGELOG.md` [Unreleased].
+
+- [ ] **Deploy the real admin backend (highest priority — fixes both the
+      exposed passphrase and the broken admin dashboard).** Follow the
+      setup steps at the top of `docs/apps-script/Code.gs`: create a Google
+      Sheet, paste the script into Extensions → Apps Script, set a Script
+      Property `ADMIN_SECRET` to a new passphrase (not the old
+      `Mowtown-Eric-2026!` — that one is already in this repo's public git
+      history and should be treated as burned), deploy as a Web App, and
+      paste the deployment URL into `GAS_WEBHOOK_URL` near the top of the
+      `<script>` in both `quote.html` and `admin.html`. Until this is done,
+      `admin.html` shows an explicit "not connected yet" message (instead
+      of silently showing nothing) and quote capture still works via
+      FormSubmit email — nothing breaks in the meantime.
+- [ ] **Create a Google Business Profile** for "The Lawn Care" (service
+      area = current suburb list, category "Lawn care service"). Free, and
+      per `docs/marketing-plan.md` the single highest-leverage thing on the
+      list — not yet done.
+- [ ] **Get a real GA4 Measurement ID** (analytics.google.com → create a
+      property → Web data stream) and replace every `G-XXXXXXXXXX`
+      placeholder across the HTML files with it (one `sed`/find-replace
+      across the repo). Currently a harmless no-op placeholder.
+- [ ] **Public liability insurance quotes** (BizCover or similar) — still
+      not in place; real exposure once jobs involve property risk.
+- [ ] **Test the quote page's map/estimator on a real phone**, not just a
+      resized browser — the trace-your-lawn interaction is touch-driven
+      and is exactly the kind of thing that looks fine in devtools and
+      breaks on-device.
+- [ ] **Confirm the FormSubmit "confirm this form" email** has been
+      clicked once (check `ericho995@gmail.com`) — otherwise every real
+      submission via that fallback path is silently swallowed.
+- [ ] Decide whether the `0402 764 211` number now live on every page
+      (nav, hero, footer, privacy page, and the site's schema.org data) is
+      the number to keep answering as "The Lawn Care" — it's public now.

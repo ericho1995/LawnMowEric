@@ -6,6 +6,51 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — critical-review follow-up: SEO, real admin backend, spam protection, phone number
+- **`robots.txt` + `sitemap.xml`** at the repo root — the site had zero
+  crawler guidance before this; GitHub Pages was serving 8 public pages
+  with nothing telling Google they existed.
+- **Meta descriptions, canonical URLs, Open Graph and Twitter Card tags on
+  every public page**, plus a `LocalBusiness` JSON-LD block on `index.html`
+  (name, phone, service area, address locality — no street address, since
+  this is a mobile service business, not a storefront). None of this
+  existed before — links shared in Facebook groups or Airtasker replies
+  rendered as bare URLs with no preview, and the site had no structured
+  data for Google to understand it's a local business.
+- **`<!DOCTYPE html>` + `<html lang="en">`** added to every page (previously
+  missing entirely — browsers were silently error-correcting this via
+  HTML5 parsing rules, but it's invalid markup and `lang` matters for
+  screen readers).
+- **Skip-to-content link** on every page (`.skip-link` in `styles.css`) —
+  was flagged as a missing accessibility basic.
+- **Custom `404.html`** at the repo root — GitHub Pages serves this
+  automatically for any unmatched URL instead of a bare unstyled 404.
+- **Real admin backend** (`docs/apps-script/Code.gs`, a Google Apps Script
+  Web App + Google Sheet) replacing `admin.html`'s dependency on the Claude
+  Artifact `db` capability, which never worked on real hosting — the admin
+  view has been silently non-functional on `thelawncare.com.au` since the
+  move to GitHub Pages. This also removes the hardcoded admin passphrase
+  that was sitting in plaintext in this now-public repo: the real
+  passphrase now lives only in the Apps Script's own Script Properties
+  (server-side, never committed anywhere) and admin.html just forwards
+  whatever's typed for the script to check. **Requires one-time setup by
+  Eric** — see the Script's header comment and the updated
+  `pre-live-checklist.md`; until `GAS_WEBHOOK_URL` is pasted into
+  `quote.html`/`admin.html`, both fall back to the previous behavior
+  (FormSubmit email, and an explicit "not connected yet" admin message)
+  with no regression.
+- **Honeypot spam field** (`_honey`) on the quote form — the form had zero
+  bot protection (`_captcha: false`, no honeypot) and was about to go
+  live and get indexed.
+- **Phone number** (0402 764 211, Eric's) added site-wide — nav (tablet/
+  desktop), homepage hero, quote page, footer on every page, privacy
+  page, and the `LocalBusiness` schema. The site previously had no phone
+  contact path at all, only a next-business-day form.
+- **Google Analytics (GA4) snippet** on every public page, with a
+  placeholder Measurement ID (`G-XXXXXXXXXX`) — harmless as shipped (loads
+  and no-ops), needs a real ID from Eric's own GA4 property to actually
+  collect data. See checklist.
+
 ### Changed — logo now used in the nav/footer, not just the favicon
 - The header/footer "logo-mark" on all 8 pages that have one was an
   inline hand-drawn SVG + CSS striped-gradient background, duplicated
