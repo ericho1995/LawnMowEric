@@ -6,6 +6,81 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed — logo now used in the nav/footer, not just the favicon
+- The header/footer "logo-mark" on all 8 pages that have one was an
+  inline hand-drawn SVG + CSS striped-gradient background, duplicated
+  in every file. Replaced with `<img src="assets/logo-icon.svg">` —
+  the same standalone logo file added earlier as the favicon — so the
+  visible nav/footer logo and the browser-tab icon are now the same
+  actual asset instead of two separate hand-maintained copies of the
+  same design.
+
+### Changed — owner name removed from public copy, pricing bump, hedging special
+- **Removed "Eric" from all public-facing site copy** (owner request) —
+  replaced with "we/our" or "the same person/operator" across `index.html`,
+  `services.html`, `quote.html`, `how-it-works.html`, `work.html` and
+  `airtasker.html`, keeping the existing "one person, not a rotating
+  subcontractor" promise intact, just without a name attached. Left
+  untouched: the private `admin.html` passphrase (`Mowtown-Eric-2026!` —
+  not public copy, ask if you want it changed too) and internal code
+  comments in `quote.html` (never rendered to visitors) and the
+  project's own internal docs/CHANGELOG (project history, not site copy).
+- **Hedge trimming special offer.** Added a "🌿 Special offer" ribbon +
+  "Intro rate" badge to the hedge trimming card on `services.html`
+  (owner: still building hedging experience, wants a discounted rate
+  while doing so) and updated the quote form's hedge checkbox label to
+  match. No fixed price shown — same "ask when you quote" pattern as
+  before, just now explicitly framed as a discount.
+- **Pricing increased.** Mow bands: Small $50–65 → **$55–70**, Medium
+  $70–90 → **$75–95**, Large $95–130 → **$105–140**. Subscription
+  $75/mo → **$85/mo**. Add-ons (edging, green waste) $15–25 →
+  **$18–28**. Updated everywhere the old numbers appeared: `services.html`
+  pricing table/cards, `quote.html`'s estimator `PRICING` bands and the
+  subscription dropdown option.
+- **Homepage "Standard mow" card now links to `quote.html`.** Previously
+  a static, non-interactive card in the services teaser grid — added
+  `a.service-card` hover/style rules to `styles.css` so it reads as
+  clickable. The other two teaser cards (Edge & whipper snip, Hedge &
+  green waste) were left as static cards — not asked for, and they
+  don't have their own dedicated page to send someone to.
+- **`work.html` gallery is now a rotating carousel** with 2 new verified
+  photos (4 total): North Wollongong NSW (close-up cut grass) and a
+  Victoria, Australia backyard shot (Australian magpie on a mowed lawn)
+  — both geotag-verified via Unsplash's own location metadata, no
+  vehicles or identifiable people. Auto-rotates every 4.5s, pauses on
+  hover/focus, with prev/next arrows and dot navigation. Plain
+  vanilla-JS carousel, no library, consistent with the rest of the site.
+
+### Added — branding, address search, mapping investigation
+- **`assets/logo-icon.svg`** — standalone logo file (mown-lawn stripe
+  badge + grass/mow-line icon, matching the existing in-page nav mark)
+  wired up as the favicon on all 10 pages. No Gemini/image-gen MCP
+  connector is available in this environment, so this is a hand-built
+  vector logo rather than AI-generated art — connect an image-gen
+  connector at claude.ai's connector settings if AI-generated art is
+  specifically wanted later.
+- **Address autocomplete on `quote.html`.** Typing in the address field
+  now debounces (400ms) a Nominatim lookup and shows a dropdown of up
+  to 5 matching addresses (keyboard nav + click to select), instead of
+  requiring "Find address" or Enter with an exact/complete address.
+- **`map-prototype-maplibre.html`** — local-only (not linked, `noindex`)
+  prototype swapping Leaflet for MapLibre GL JS (WebGL renderer, same
+  free/keyless Esri satellite imagery, no API key or account needed).
+  Built to evaluate whether a different map engine gives a smoother
+  pan/zoom feel than Leaflet and simplifies the auto-highlight tool
+  (reads pixels directly off the rendered WebGL canvas instead of
+  Leaflet's tile-stitching approach — the mechanism behind September's
+  invisible-highlight bug). Code verified sound (WebGL context creates
+  cleanly, no MapLibre errors fire, direct `fetch()` to the Esri tile
+  server succeeds) but tile rendering could not be visually confirmed
+  inside the sandboxed preview browser used for testing — MapLibre never
+  issued a single tile request there, for reasons unrelated to the code
+  (isolated with a second, minimal from-scratch map instance). Needs a
+  real desktop browser to properly evaluate before deciding.
+- **Gallery photo swap.** Replaced the `work.html` photo of a ride-on
+  tractor mower on a sports oval (owner: "no big vehicles") with a
+  verified Gold Coast QLD front lawn — no vehicles, just a mowed lawn.
+
 ### Added — marketing
 - **`airtasker.html`** — landing page for traffic arriving via Airtasker
   (profile link / task replies). Reassures repeat Airtasker customers

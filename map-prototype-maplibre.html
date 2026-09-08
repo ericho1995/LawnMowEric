@@ -1,0 +1,230 @@
+<meta charset="UTF-8">
+<title>Map prototype — MapLibre GL (local test only)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css">
+<style>
+  body { margin: 0; font-family: -apple-system, Segoe UI, Arial, sans-serif; background: #F3F0E4; color: #211D17; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .note { background: #fff; border: 1px solid #ddd6c4; border-radius: 10px; padding: 14px 18px; font-size: 0.9rem; margin-bottom: 18px; line-height: 1.5; }
+  .search { display: flex; gap: 10px; margin-bottom: 12px; }
+  .search input { flex: 1; padding: 10px 12px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 8px; }
+  .search button, .controls button {
+    padding: 10px 16px; font-size: 0.9rem; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer;
+  }
+  .controls { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+  .controls button.active { background: #FF6A1A; color: #fff; border-color: #FF6A1A; }
+  #map { height: 480px; border-radius: 10px; overflow: hidden; border: 1px solid #ccc; position: relative; }
+  #status { margin-top: 10px; font-size: 0.88rem; color: #6B6459; min-height: 1.4em; }
+  #status[data-state="ok"] { color: #1D7238; font-weight: 600; }
+  #status[data-state="error"] { color: #C2490A; font-weight: 600; }
+  .figures { display: flex; gap: 24px; margin-top: 10px; font-size: 0.9rem; }
+  .figures b { display: block; font-size: 1.3rem; }
+</style>
+
+<div class="wrap">
+  <h1>🗺️ Map engine prototype — MapLibre GL JS</h1>
+  <div class="note">
+    <b>What this is:</b> a side-by-side test of MapLibre GL (WebGL vector-map engine) as a possible replacement for Leaflet on the real quote page. No API key, no account, no cost — same free Esri satellite imagery already used live, just rendered through a different, more modern engine. Not linked from the real site; open this file directly to test locally, then delete it once a decision is made.
+    <br><br>
+    <b>What to compare against the live <code>quote.html</code>:</b> pan/zoom smoothness (WebGL vs Leaflet's DOM tiles), and whether "Auto-highlight" reliably paints a visible highlight (this engine reads pixels straight off the rendered map canvas — simpler than Leaflet's tile-stitching approach, which is what caused the invisible-highlight bug you hit).
+  </div>
+
+  <div class="search">
+    <input type="text" id="address" placeholder="Type an address, e.g. 12 Smith St, Brunswick VIC">
+    <button id="search-btn">Find address</button>
+  </div>
+  <div class="controls">
+    <button id="magic-btn">🪄 Auto-highlight greenery</button>
+    <button id="clear-btn">🗑 Clear</button>
+  </div>
+  <div id="map"></div>
+  <div id="status">Search an address, zoom in close, then click "Auto-highlight greenery" and click once on the lawn.</div>
+  <div class="figures">
+    <div><b id="area-m2">–</b>m² highlighted</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
+<script>
+(function () {
+  const statusEl = document.getElementById('status');
+  const areaEl = document.getElementById('area-m2');
+  const magicBtn = document.getElementById('magic-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const addressInput = document.getElementById('address');
+  const searchBtn = document.getElementById('search-btn');
+  const mapContainer = document.getElementById('map');
+
+  function setStatus(text, state) {
+    statusEl.textContent = text;
+    if (state) statusEl.dataset.state = state; else statusEl.removeAttribute('data-state');
+  }
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        esri: {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256,
+          attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
+        }
+      },
+      layers: [{ id: 'esri-imagery', type: 'raster', source: 'esri' }]
+    },
+    center: [144.9631, -37.8136],
+    zoom: 13,
+    // Required to read pixels back out of the WebGL canvas for the magic-wand tool.
+    preserveDrawingBuffer: true
+  });
+  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  let overlayCanvas = null;
+  let magicMode = false;
+  let magicAreaM2 = 0;
+
+  map.on('load', function () {
+    overlayCanvas = document.createElement('canvas');
+    overlayCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
+    mapContainer.appendChild(overlayCanvas);
+    resizeOverlay();
+  });
+  map.on('resize', resizeOverlay);
+
+  function resizeOverlay() {
+    if (!overlayCanvas) return;
+    const glCanvas = map.getCanvas();
+    overlayCanvas.width = glCanvas.width;
+    overlayCanvas.height = glCanvas.height;
+    overlayCanvas.style.width = glCanvas.style.width;
+    overlayCanvas.style.height = glCanvas.style.height;
+  }
+
+  function clearOverlay() {
+    magicMode = false;
+    magicAreaM2 = 0;
+    magicBtn.classList.remove('active');
+    areaEl.textContent = '–';
+    if (overlayCanvas) {
+      overlayCanvas.getContext('2d').clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+  }
+
+  function runMagicWand(cssX, cssY) {
+    try {
+      const glCanvas = map.getCanvas();
+      const dpr = window.devicePixelRatio || 1;
+      const w = glCanvas.width, h = glCanvas.height;
+      const ctx = glCanvas.getContext('webgl') || glCanvas.getContext('webgl2');
+      // Reading directly off the live WebGL canvas - no tile-stitching needed,
+      // unlike the Leaflet version which has to composite DOM <img> tiles by hand.
+      const readCtx = document.createElement('canvas');
+      readCtx.width = w; readCtx.height = h;
+      const rctx = readCtx.getContext('2d');
+      rctx.drawImage(glCanvas, 0, 0, w, h);
+      const imgData = rctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      const startX = Math.round(cssX * dpr), startY = Math.round(cssY * dpr);
+      function isGreen(idx) {
+        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+        return g > r + 8 && g > b + 5 && g > 45;
+      }
+      if (startX < 0 || startY < 0 || startX >= w || startY >= h) return;
+      const startPx = (startY * w + startX) * 4;
+      if (!isGreen(startPx)) {
+        setStatus("That spot doesn't look like lawn — try clicking more precisely on the grass.", 'error');
+        return;
+      }
+
+      const visited = new Uint8Array(w * h);
+      const mask = new Uint8Array(w * h);
+      const stack = [[startX, startY]];
+      visited[startY * w + startX] = 1;
+      let count = 0;
+      const maxPixels = 400000;
+
+      while (stack.length && count < maxPixels) {
+        const p = stack.pop();
+        const x = p[0], y = p[1];
+        const idx = y * w + x;
+        mask[idx] = 1;
+        count++;
+        const neighbors = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]];
+        for (let i = 0; i < 4; i++) {
+          const nx = neighbors[i][0], ny = neighbors[i][1];
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          const nIdx = ny * w + nx;
+          if (visited[nIdx]) continue;
+          visited[nIdx] = 1;
+          if (isGreen(nIdx * 4)) stack.push([nx, ny]);
+        }
+      }
+
+      const octx = overlayCanvas.getContext('2d');
+      octx.clearRect(0, 0, w, h);
+      const outData = octx.createImageData(w, h);
+      for (let i = 0; i < mask.length; i++) {
+        if (mask[i]) {
+          outData.data[i * 4] = 255;
+          outData.data[i * 4 + 1] = 106;
+          outData.data[i * 4 + 2] = 26;
+          outData.data[i * 4 + 3] = 120;
+        }
+      }
+      octx.putImageData(outData, 0, 0);
+
+      const lat = map.getCenter().lat;
+      const zoom = map.getZoom();
+      const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom) / dpr;
+      const areaM2 = count * metersPerPixel * metersPerPixel;
+      magicAreaM2 = areaM2;
+      areaEl.textContent = areaM2.toFixed(0);
+      setStatus(count >= maxPixels
+        ? 'Highlighted area was capped at the max — zoom in and try a smaller click point.'
+        : 'Auto-highlighted the green area around your click.', 'ok');
+    } catch (err) {
+      setStatus('Could not read pixel data from the map canvas: ' + err.message, 'error');
+    }
+  }
+
+  magicBtn.addEventListener('click', function () {
+    magicMode = true;
+    magicBtn.classList.add('active');
+    setStatus('Click once on the lawn in the map above.');
+  });
+  clearBtn.addEventListener('click', clearOverlay);
+
+  map.on('click', function (e) {
+    if (!magicMode) return;
+    magicMode = false;
+    magicBtn.classList.remove('active');
+    runMagicWand(e.point.x, e.point.y);
+  });
+
+  async function searchAddress() {
+    const query = addressInput.value.trim();
+    if (!query) return;
+    setStatus('Searching…');
+    searchBtn.disabled = true;
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=au&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const results = await res.json();
+      if (!results.length) { setStatus('Could not find that address.', 'error'); return; }
+      map.flyTo({ center: [parseFloat(results[0].lon), parseFloat(results[0].lat)], zoom: 20 });
+      setStatus('Found it — click "Auto-highlight greenery" and click on the lawn.', 'ok');
+    } catch (err) {
+      setStatus('Address search unavailable right now.', 'error');
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+  searchBtn.addEventListener('click', searchAddress);
+  addressInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); searchAddress(); } });
+})();
+</script>

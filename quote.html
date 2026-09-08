@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
@@ -10,9 +11,7 @@
 <header class="site">
   <div class="nav">
     <a class="logo" href="index.html">
-      <span class="logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19c3-1 5-1 8 0s5 1 8 0" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M6 19V9m6 10V6m6 13v-7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-      </span>
+      <img class="logo-mark" src="assets/logo-icon.svg" alt="">
       The Lawn Care
     </a>
     <nav class="links">
@@ -43,8 +42,9 @@
       </div>
       <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
       <div class="estimator-search">
-        <input type="text" id="lawn-address" placeholder="Type your address, e.g. 12 Smith St, Brunswick VIC" autocomplete="off">
+        <input type="text" id="lawn-address" placeholder="Type your address, e.g. 12 Smith St, Brunswick VIC" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="address-suggestions">
         <button type="button" class="btn btn-ghost" id="lawn-address-search">Find address</button>
+        <div class="address-suggestions" id="address-suggestions" role="listbox"></div>
       </div>
       <div id="lawn-map"></div>
       <div class="estimator-step" style="margin-top:16px;"><span class="estimator-step-num">2</span> Mark your lawn</div>
@@ -64,7 +64,7 @@
         </div>
         <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
       </div>
-      <p class="estimator-note">Estimate only, based on traced/highlighted area for a regularly-mowed lawn — final price is confirmed by Eric before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. The auto-highlight tool is experimental (color-based detection, not verified against your actual property boundary) — always double check the figure looks right. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+      <p class="estimator-note">Estimate only, based on traced/highlighted area for a regularly-mowed lawn — final price is confirmed before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. The auto-highlight tool is experimental (color-based detection, not verified against your actual property boundary) — always double check the figure looks right. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
     </div>
 
     <div class="quote-wrap">
@@ -118,7 +118,7 @@
               <option>Weekly</option>
               <option>Fortnightly</option>
               <option>Monthly</option>
-              <option>Monthly subscription ($75/mo)</option>
+              <option>Monthly subscription ($85/mo)</option>
             </select>
           </div>
           <div class="field">
@@ -134,10 +134,10 @@
             <label>Add-ons<span class="hint"> — optional, extra cost, confirmed when we quote (see <a href="services.html" style="color:var(--accent-dark);">full pricing</a>)</span></label>
             <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:6px;">
               <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.92rem;">
-                <input type="checkbox" name="addonEdging" value="Edge & whipper snip"> Edge &amp; whipper snip (+$15–25)
+                <input type="checkbox" name="addonEdging" value="Edge & whipper snip"> Edge &amp; whipper snip (+$18–28)
               </label>
               <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.92rem;">
-                <input type="checkbox" name="addonHedge" value="Hedge trimming"> Hedge trimming (POA)
+                <input type="checkbox" name="addonHedge" value="Hedge trimming"> 🌿 Hedge trimming (special intro rate — ask when you quote)
               </label>
             </div>
           </div>
@@ -176,7 +176,7 @@
 <footer>
   <div class="wrap">
     <div class="footer-grid">
-      <div class="logo"><span class="logo-mark" style="width:28px;height:28px;"></span>The Lawn Care</div>
+      <div class="logo"><img class="logo-mark" src="assets/logo-icon.svg" alt="" style="width:28px;height:28px;">The Lawn Care</div>
       <div class="footer-links">
         <a href="services.html">Services</a>
         <a href="work.html">Our work</a>
@@ -272,9 +272,9 @@
   // green waste and access surcharges are quoted separately.
   const PRICING = {
     bands: [
-      { max: 150, low: 50, high: 65 },
-      { max: 400, low: 70, high: 90 },
-      { max: 800, low: 95, high: 130 }
+      { max: 150, low: 55, high: 70 },
+      { max: 400, low: 75, high: 95 },
+      { max: 800, low: 105, high: 140 }
       // 800m²+ is quote-on-request — no fixed band.
     ]
   };
@@ -600,9 +600,16 @@
     document.getElementById('q-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
+  function goToAddress(lat, lon) {
+    initMap();
+    map.setView([lat, lon], 20);
+    setStatus('Found it — click "Auto-highlight greenery" or trace your lawn manually.', 'ok');
+  }
+
   async function searchAddress() {
     const query = addressInput.value.trim();
     if (!query) return;
+    closeSuggestions();
     setStatus('Searching…');
     searchBtn.disabled = true;
     try {
@@ -614,9 +621,7 @@
         setStatus('Could not find that address — try adding suburb and state.', 'error');
         return;
       }
-      initMap();
-      map.setView([parseFloat(results[0].lat), parseFloat(results[0].lon)], 20);
-      setStatus('Found it — click "Auto-highlight greenery" or trace your lawn manually.', 'ok');
+      goToAddress(parseFloat(results[0].lat), parseFloat(results[0].lon));
     } catch (err) {
       initMap();
       setStatus('Address search is unavailable right now — pan and zoom the map manually instead.', 'error');
@@ -625,10 +630,93 @@
     }
   }
 
-  searchBtn.addEventListener('click', searchAddress);
-  addressInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
+  // ---- Address autocomplete (debounced Nominatim lookup, dropdown of suggestions) ----
+  const suggestionsEl = document.getElementById('address-suggestions');
+  let suggestDebounce = null;
+  let suggestQueryId = 0;
+  let currentSuggestions = [];
+  let activeSuggestion = -1;
+
+  function closeSuggestions() {
+    suggestionsEl.innerHTML = '';
+    currentSuggestions = [];
+    activeSuggestion = -1;
+    addressInput.setAttribute('aria-expanded', 'false');
+  }
+
+  function updateActiveSuggestion(items) {
+    items.forEach(function (item, i) { item.classList.toggle('active', i === activeSuggestion); });
+    if (activeSuggestion >= 0 && items[activeSuggestion]) items[activeSuggestion].scrollIntoView({ block: 'nearest' });
+  }
+
+  function selectSuggestion(result) {
+    addressInput.value = result.display_name;
+    closeSuggestions();
+    goToAddress(parseFloat(result.lat), parseFloat(result.lon));
+  }
+
+  function renderSuggestions(results) {
+    suggestionsEl.innerHTML = '';
+    activeSuggestion = -1;
+    results.forEach(function (result) {
+      const item = document.createElement('div');
+      item.className = 'address-suggestion';
+      item.setAttribute('role', 'option');
+      item.textContent = result.display_name;
+      // mousedown (not click) fires before the input's blur handler would close the dropdown.
+      item.addEventListener('mousedown', function (e) { e.preventDefault(); selectSuggestion(result); });
+      suggestionsEl.appendChild(item);
+    });
+    addressInput.setAttribute('aria-expanded', results.length ? 'true' : 'false');
+  }
+
+  async function fetchSuggestions(query) {
+    const queryId = ++suggestQueryId;
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=au&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return;
+      const results = await res.json();
+      if (queryId !== suggestQueryId) return; // a newer keystroke has since fired — drop this stale response
+      currentSuggestions = results;
+      renderSuggestions(results);
+    } catch (err) { /* silent - Find address / Enter still work without suggestions */ }
+  }
+
+  addressInput.addEventListener('input', function () {
+    clearTimeout(suggestDebounce);
+    const query = addressInput.value.trim();
+    if (query.length < 3) { closeSuggestions(); return; }
+    suggestDebounce = setTimeout(function () { fetchSuggestions(query); }, 400);
   });
+
+  addressInput.addEventListener('keydown', function (e) {
+    const items = suggestionsEl.querySelectorAll('.address-suggestion');
+    if (e.key === 'ArrowDown' && items.length) {
+      e.preventDefault();
+      activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1);
+      updateActiveSuggestion(items);
+    } else if (e.key === 'ArrowUp' && items.length) {
+      e.preventDefault();
+      activeSuggestion = Math.max(activeSuggestion - 1, 0);
+      updateActiveSuggestion(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeSuggestion >= 0 && currentSuggestions[activeSuggestion]) {
+        selectSuggestion(currentSuggestions[activeSuggestion]);
+      } else {
+        searchAddress();
+      }
+    } else if (e.key === 'Escape') {
+      closeSuggestions();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.estimator-search')) closeSuggestions();
+  });
+
+  searchBtn.addEventListener('click', searchAddress);
 
   // Lazy-init: don't pull map tiles until the estimator scrolls into view.
   if ('IntersectionObserver' in window) {

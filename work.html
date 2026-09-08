@@ -3,14 +3,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
 <link rel="stylesheet" href="assets/styles.css">
 
 <header class="site">
   <div class="nav">
     <a class="logo" href="index.html">
-      <span class="logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19c3-1 5-1 8 0s5 1 8 0" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M6 19V9m6 10V6m6 13v-7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-      </span>
+      <img class="logo-mark" src="assets/logo-icon.svg" alt="">
       The Lawn Care
     </a>
     <nav class="links">
@@ -34,17 +33,30 @@
 
 <section>
   <div class="wrap">
-    <div class="gallery-grid">
-      <figure class="gallery-item">
-        <img src="https://images.unsplash.com/photo-1740692666709-6dfe777172b8?fm=jpg&q=75&w=900&auto=format&fit=crop" alt="A tidy Australian house with a neatly mowed front lawn">
-        <figcaption>Tidy from the street</figcaption>
-      </figure>
-      <figure class="gallery-item">
-        <img src="https://images.unsplash.com/photo-1720175373618-c901f5525522?fm=jpg&q=75&w=900&auto=format&fit=crop" alt="Mowing equipment on a well-kept Australian grass field">
-        <figcaption>The right gear for the job</figcaption>
-      </figure>
+    <div class="carousel" id="work-carousel">
+      <div class="carousel-track" id="work-carousel-track">
+        <div class="carousel-slide">
+          <img src="https://images.unsplash.com/photo-1740692666709-6dfe777172b8?fm=jpg&q=75&w=1200&auto=format&fit=crop" alt="A tidy Australian house with a neatly mowed front lawn">
+          <figcaption>Tidy from the street</figcaption>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://images.unsplash.com/photo-1782511295240-2d55c11776ec?fm=jpg&q=75&w=1200&auto=format&fit=crop" alt="A neatly mowed front lawn outside an Australian brick house">
+          <figcaption>Freshly mowed, edge to edge</figcaption>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://images.unsplash.com/photo-1642391246436-3eb1b3f36d78?fm=jpg&q=75&w=1200&auto=format&fit=crop" alt="Close-up of freshly cut green grass">
+          <figcaption>Fresh cut, up close</figcaption>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://images.unsplash.com/photo-1764676878671-cc6f94c5f809?fm=jpg&q=75&w=1200&auto=format&fit=crop" alt="An Australian magpie standing on a neatly mowed backyard lawn in Victoria">
+          <figcaption>Even the locals approve</figcaption>
+        </div>
+      </div>
+      <button type="button" class="carousel-btn prev" id="carousel-prev" aria-label="Previous photo">‹</button>
+      <button type="button" class="carousel-btn next" id="carousel-next" aria-label="Next photo">›</button>
     </div>
-    <p class="gallery-credit">Photos: Newcastle NSW &amp; Revesby NSW, via Unsplash — real Australian lawns, not (yet) Eric's own jobs. We'll swap these for our own as we build up a photo library.</p>
+    <div class="carousel-dots" id="work-carousel-dots"></div>
+    <p class="gallery-credit">Photos: Newcastle NSW, Gold Coast QLD, North Wollongong NSW &amp; Victoria, via Unsplash — real Australian lawns, not (yet) our own jobs. We'll swap these for our own as we build up a photo library.</p>
   </div>
 </section>
 
@@ -61,7 +73,7 @@
 <footer>
   <div class="wrap">
     <div class="footer-grid">
-      <div class="logo"><span class="logo-mark" style="width:28px;height:28px;"></span>The Lawn Care</div>
+      <div class="logo"><img class="logo-mark" src="assets/logo-icon.svg" alt="" style="width:28px;height:28px;">The Lawn Care</div>
       <div class="footer-links">
         <a href="services.html">Services</a>
         <a href="work.html">Our work</a>
@@ -80,3 +92,55 @@
 </footer>
 
 <script src="assets/kill-switch.js"></script>
+
+<script>
+(function () {
+  const carousel = document.getElementById('work-carousel');
+  const track = document.getElementById('work-carousel-track');
+  const slides = track.children;
+  const dotsEl = document.getElementById('work-carousel-dots');
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+  const AUTO_ROTATE_MS = 4500;
+  let index = 0;
+  let timer = null;
+
+  for (let i = 0; i < slides.length; i++) {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'carousel-dot';
+    dot.setAttribute('aria-label', 'Go to photo ' + (i + 1));
+    dot.addEventListener('click', function () { goTo(i); restartAutoRotate(); });
+    dotsEl.appendChild(dot);
+  }
+
+  function render() {
+    track.style.transform = 'translateX(-' + (index * 100) + '%)';
+    Array.from(dotsEl.children).forEach(function (dot, i) {
+      dot.classList.toggle('active', i === index);
+    });
+  }
+
+  function goTo(i) {
+    index = (i + slides.length) % slides.length;
+    render();
+  }
+
+  function next() { goTo(index + 1); }
+  function prev() { goTo(index - 1); }
+
+  function startAutoRotate() { timer = setInterval(next, AUTO_ROTATE_MS); }
+  function stopAutoRotate() { if (timer) { clearInterval(timer); timer = null; } }
+  function restartAutoRotate() { stopAutoRotate(); startAutoRotate(); }
+
+  nextBtn.addEventListener('click', function () { next(); restartAutoRotate(); });
+  prevBtn.addEventListener('click', function () { prev(); restartAutoRotate(); });
+  carousel.addEventListener('mouseenter', stopAutoRotate);
+  carousel.addEventListener('mouseleave', startAutoRotate);
+  carousel.addEventListener('focusin', stopAutoRotate);
+  carousel.addEventListener('focusout', startAutoRotate);
+
+  render();
+  startAutoRotate();
+})();
+</script>

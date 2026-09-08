@@ -1,0 +1,11 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="mowStripes" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <rect width="14" height="14" fill="#2E9E4F"/>
+      <rect width="7" height="14" fill="#1D7238"/>
+    </pattern>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#mowStripes)"/>
+  <path d="M20 46V26M32 46V20M44 46V32" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <path d="M16 46c6-2 10-2 16 0s10 2 16 0" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg>
