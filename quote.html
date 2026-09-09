@@ -61,7 +61,7 @@
       <div class="estimator-head">
         <div>
           <h3>🛰️ Draw your lawn for an instant size &amp; price estimate</h3>
-          <p>Find your address, then trace the mowable area on the satellite view. We'll calculate the exact area and give you a ballpark price on the spot — optional, but it saves back-and-forth.</p>
+          <p>Find your address, then draw over the mowable area on the satellite view. We'll calculate the exact area and give you a ballpark price on the spot — optional, but it saves back-and-forth.</p>
         </div>
       </div>
       <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
@@ -73,13 +73,13 @@
       <div id="lawn-map"></div>
       <div class="estimator-step" style="margin-top:16px;"><span class="estimator-step-num">2</span> Mark your lawn</div>
       <div class="estimator-draw-controls">
-        <button type="button" class="btn btn-primary" id="draw-magic-btn">🪄 Auto-highlight greenery (beta)</button>
-        <button type="button" class="btn btn-ghost" id="draw-polygon-btn">✏️ Trace my lawn shape</button>
-        <button type="button" class="btn btn-ghost" id="draw-rect-btn">▭ Draw a simple rectangle</button>
+        <button type="button" class="btn btn-primary" id="draw-rect-btn">▭ Draw a box over your lawn</button>
+        <button type="button" class="btn btn-ghost" id="draw-polygon-btn">✏️ Trace an irregular shape</button>
+        <button type="button" class="btn btn-ghost" id="draw-edit-btn" disabled>✥ Adjust shape</button>
         <button type="button" class="btn btn-ghost" id="draw-undo-btn" disabled>↩ Undo last point</button>
         <button type="button" class="btn btn-ghost" id="draw-clear-btn" disabled>🗑 Clear</button>
       </div>
-      <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Easiest: click "Auto-highlight greenery", then click once on your lawn. If it doesn't look right, use Trace or Rectangle instead for full control.</div>
+      <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Easiest: draw a box over your lawn, then drag its corners with "Adjust shape" until it fits. Use Trace instead if your lawn isn't box-shaped.</div>
       <div class="estimator-result" id="estimator-result">
         <div class="figures">
           <div><b id="estimator-area-m2">–</b><span>m² traced</span></div>
@@ -88,7 +88,7 @@
         </div>
         <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
       </div>
-      <p class="estimator-note">Estimate only, based on traced/highlighted area for a regularly-mowed lawn — final price is confirmed before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. The auto-highlight tool is experimental (color-based detection, not verified against your actual property boundary) — always double check the figure looks right. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+      <p class="estimator-note">Estimate only, based on the area you draw for a regularly-mowed lawn — final price is confirmed before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
     </div>
 
     <div class="quote-wrap">
@@ -365,21 +365,21 @@
   const searchBtn = document.getElementById('lawn-address-search');
   const polygonBtn = document.getElementById('draw-polygon-btn');
   const rectBtn = document.getElementById('draw-rect-btn');
+  const editBtn = document.getElementById('draw-edit-btn');
   const undoBtn = document.getElementById('draw-undo-btn');
   const clearBtn = document.getElementById('draw-clear-btn');
-  const magicBtn = document.getElementById('draw-magic-btn');
 
-  const DEFAULT_HINT = 'Easiest: click "Auto-highlight greenery", then click once on your lawn. If it doesn\'t look right, use Trace or Rectangle instead for full control.';
+  const DEFAULT_HINT = 'Easiest: draw a box over your lawn, then drag its corners with "Adjust shape" until it fits. Use Trace instead if your lawn isn\'t box-shaped.';
   const MIN_DRAW_ZOOM = 18;
+  const SHAPE_COLOR = '#C98A2B';
 
   let map = null;
   let drawnItems = null;
   let polygonHandler = null;
   let rectangleHandler = null;
+  let editHandler = null;
   let activeHandler = null;
-  let magicMode = false;
-  let magicCanvas = null;
-  let magicAreaM2 = 0;
+  let isEditing = false;
   let currentAreaM2 = 0;
   let currentEstimate = null;
 
@@ -399,6 +399,7 @@
       drawnItems.removeLayer(layer);
       map.closePopup();
       recalcArea();
+      updateEditAvailability();
     });
     wrap.appendChild(btn);
     layer.bindPopup(wrap);
@@ -408,6 +409,8 @@
     polygonBtn.classList.toggle('active', isDrawing && activeHandler === polygonHandler);
     rectBtn.classList.toggle('active', isDrawing && activeHandler === rectangleHandler);
     undoBtn.disabled = !(isDrawing && activeHandler === polygonHandler);
+    polygonBtn.disabled = isEditing;
+    rectBtn.disabled = isEditing;
     if (!isDrawing) activeHandler = null;
   }
 
@@ -418,14 +421,9 @@
     }
   }
 
-  function clearMagicOverlay() {
-    magicMode = false;
-    magicAreaM2 = 0;
-    magicBtn.classList.remove('active');
-    if (magicCanvas) {
-      const ctx = magicCanvas.getContext('2d');
-      ctx.clearRect(0, 0, magicCanvas.width, magicCanvas.height);
-    }
+  function updateEditAvailability() {
+    if (isEditing) return;
+    editBtn.disabled = !drawnItems || drawnItems.getLayers().length === 0;
   }
 
   function initMap() {
@@ -450,145 +448,66 @@
     polygonHandler = new L.Draw.Polygon(map, {
       allowIntersection: false,
       showArea: true,
-      shapeOptions: { color: '#FF6A1A', weight: 3 }
+      metric: true,
+      shapeOptions: { color: SHAPE_COLOR, weight: 3 }
     });
     rectangleHandler = new L.Draw.Rectangle(map, {
-      shapeOptions: { color: '#FF6A1A', weight: 3 }
+      showArea: true,
+      metric: true,
+      shapeOptions: { color: SHAPE_COLOR, weight: 3 }
+    });
+    editHandler = new L.EditToolbar.Edit(map, {
+      featureGroup: drawnItems,
+      selectedPathOptions: {
+        color: SHAPE_COLOR, weight: 4, dashArray: '8,6',
+        maintainColor: true
+      }
     });
 
     map.on(L.Draw.Event.CREATED, function (e) {
-      clearMagicOverlay();
       bindRemovePopup(e.layer);
       drawnItems.addLayer(e.layer);
       recalcArea();
+      updateEditAvailability();
     });
     map.on(L.Draw.Event.DRAWSTART, function () { setDrawingState(true); });
     map.on(L.Draw.Event.DRAWSTOP, function () { setDrawingState(false); });
-
-    magicCanvas = document.createElement('canvas');
-    // Leaflet's own .leaflet-map-pane sits at z-index 400 (and its tile/overlay
-    // panes nest inside that stacking context) - this overlay must sit above
-    // that whole pane, not just above the tile pane's own z-index:200, or it
-    // renders invisibly underneath the visible map.
-    magicCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:450;';
-    mapContainer.appendChild(magicCanvas);
-
-    map.on('click', function (e) {
-      if (!magicMode) return;
-      magicMode = false;
-      magicBtn.classList.remove('active');
-      runMagicWand(e.containerPoint.x, e.containerPoint.y);
+    map.on(L.Draw.Event.EDITED, function () {
+      recalcArea();
+      setStatus('Shape updated — check the estimate below.', 'ok');
     });
   }
 
-  function runMagicWand(clickX, clickY) {
-    try {
-      const size = map.getSize();
-      const w = Math.round(size.x), h = Math.round(size.y);
-      const srcCanvas = document.createElement('canvas');
-      srcCanvas.width = w; srcCanvas.height = h;
-      const ctx = srcCanvas.getContext('2d', { willReadFrequently: true });
-
-      const mapRect = mapContainer.getBoundingClientRect();
-      const tileImgs = mapContainer.querySelectorAll('.leaflet-tile-pane .leaflet-tile-loaded');
-      tileImgs.forEach(function (img) {
-        const r = img.getBoundingClientRect();
-        try {
-          ctx.drawImage(img, r.left - mapRect.left, r.top - mapRect.top, r.width, r.height);
-        } catch (e) { /* one bad tile shouldn't kill the whole read */ }
-      });
-
-      const imgData = ctx.getImageData(0, 0, w, h);
-      const data = imgData.data;
-
-      function isGreen(idx) {
-        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-        return g > r + 8 && g > b + 5 && g > 45;
-      }
-
-      const startX = Math.round(clickX), startY = Math.round(clickY);
-      if (startX < 0 || startY < 0 || startX >= w || startY >= h) return;
-      const startPx = (startY * w + startX) * 4;
-      if (!isGreen(startPx)) {
-        setStatus("That spot doesn't look like lawn to the auto-detector — try clicking more precisely on the grass, or use Trace/Rectangle instead.", 'error');
-        return;
-      }
-
-      const visited = new Uint8Array(w * h);
-      const mask = new Uint8Array(w * h);
-      const stack = [[startX, startY]];
-      visited[startY * w + startX] = 1;
-      let count = 0;
-      const maxPixels = 150000;
-
-      while (stack.length && count < maxPixels) {
-        const point = stack.pop();
-        const x = point[0], y = point[1];
-        const idx = y * w + x;
-        mask[idx] = 1;
-        count++;
-        const neighbors = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]];
-        for (let i = 0; i < 4; i++) {
-          const nx = neighbors[i][0], ny = neighbors[i][1];
-          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-          const nIdx = ny * w + nx;
-          if (visited[nIdx]) continue;
-          visited[nIdx] = 1;
-          if (isGreen(nIdx * 4)) stack.push([nx, ny]);
-        }
-      }
-
-      magicCanvas.width = w; magicCanvas.height = h;
-      const octx = magicCanvas.getContext('2d');
-      octx.clearRect(0, 0, w, h);
-      const outData = octx.createImageData(w, h);
-      for (let i = 0; i < mask.length; i++) {
-        if (mask[i]) {
-          outData.data[i * 4] = 255;
-          outData.data[i * 4 + 1] = 106;
-          outData.data[i * 4 + 2] = 26;
-          outData.data[i * 4 + 3] = 120;
-        }
-      }
-      octx.putImageData(outData, 0, 0);
-
-      const lat = map.getCenter().lat;
-      const zoom = map.getZoom();
-      const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
-      const areaM2 = count * metersPerPixel * metersPerPixel;
-
-      magicAreaM2 = areaM2;
-      currentAreaM2 = areaM2;
-      currentEstimate = computeEstimate(areaM2);
-      clearBtn.disabled = false;
-
-      areaM2El.textContent = areaM2.toFixed(0);
-      areaSqftEl.textContent = (areaM2 * 10.7639).toFixed(0);
-      priceEl.textContent = currentEstimate.quoteOnRequest ? 'Quote on request' : '$' + currentEstimate.low + '–$' + currentEstimate.high;
-      resultEl.classList.add('visible');
-
-      if (count >= maxPixels) {
-        setStatus('That highlighted area is very large and was capped — trace it manually instead for an accurate figure.', 'error');
-      } else {
-        setStatus('Auto-highlighted the green area around your click (beta) — check it looks right, or use Trace/Rectangle if not.', 'ok');
-      }
-    } catch (err) {
-      setStatus("Couldn't auto-detect from this map view (browser restriction) — use Trace or Rectangle instead.", 'error');
-    }
+  function exitEditMode(save) {
+    if (!isEditing) return;
+    isEditing = false;
+    if (save) editHandler.save(); else editHandler.revertLayers();
+    editHandler.disable();
+    editBtn.classList.remove('active');
+    editBtn.textContent = '✥ Adjust shape';
+    setDrawingState(false);
+    updateEditAvailability();
   }
 
-  magicBtn.addEventListener('click', function () {
+  editBtn.addEventListener('click', function () {
     initMap();
-    if (activeHandler) { activeHandler.disable(); activeHandler = null; setDrawingState(false); }
-    ensureCloseZoom();
-    magicMode = true;
-    magicBtn.classList.add('active');
-    setStatus('Click once on your lawn in the map above.', 'ok');
+    if (!isEditing) {
+      if (activeHandler) { activeHandler.disable(); }
+      isEditing = true;
+      editHandler.enable();
+      editBtn.classList.add('active');
+      editBtn.textContent = '✓ Done adjusting';
+      polygonBtn.disabled = true;
+      rectBtn.disabled = true;
+      setStatus('Drag the corner handles to reshape it, then click "Done adjusting".', 'ok');
+    } else {
+      exitEditMode(true);
+    }
   });
 
   polygonBtn.addEventListener('click', function () {
     initMap();
-    clearMagicOverlay();
+    exitEditMode(true);
     if (activeHandler) activeHandler.disable();
     ensureCloseZoom();
     activeHandler = polygonHandler;
@@ -598,12 +517,12 @@
 
   rectBtn.addEventListener('click', function () {
     initMap();
-    clearMagicOverlay();
+    exitEditMode(true);
     if (activeHandler) activeHandler.disable();
     ensureCloseZoom();
     activeHandler = rectangleHandler;
     rectangleHandler.enable();
-    setStatus('Click and drag a rectangle over your lawn.');
+    setStatus('Click and drag a box over your lawn.');
   });
 
   undoBtn.addEventListener('click', function () {
@@ -613,14 +532,15 @@
   });
 
   clearBtn.addEventListener('click', function () {
-    clearMagicOverlay();
+    exitEditMode(false);
     if (drawnItems) drawnItems.clearLayers();
     recalcArea();
+    updateEditAvailability();
   });
 
   function recalcArea() {
-    let totalM2 = magicAreaM2;
-    let shapeCount = magicAreaM2 > 0 ? 1 : 0;
+    let totalM2 = 0;
+    let shapeCount = 0;
     if (drawnItems) {
       drawnItems.eachLayer(function (layer) {
         shapeCount++;
@@ -670,7 +590,7 @@
   function goToAddress(lat, lon) {
     initMap();
     map.setView([lat, lon], 20);
-    setStatus('Found it — click "Auto-highlight greenery" or trace your lawn manually.', 'ok');
+    setStatus('Found it — draw a box over your lawn, or trace it for an irregular shape.', 'ok');
   }
 
   async function searchAddress() {
