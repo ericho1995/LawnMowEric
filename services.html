@@ -48,10 +48,29 @@
 </header>
 
 <section id="main" class="hero hero-compact">
-  <div class="hero-inner single">
-    <span class="eyebrow">🌱 Services &amp; pricing</span>
-    <h1>Pick a mow, not a headache.</h1>
-    <p class="lede">Every job starts with a standard mow — add what your lawn actually needs from there. Pay per visit, or subscribe and forget about it.</p>
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">🌱 Services &amp; pricing</span>
+      <h1>Pick a mow, not a headache.</h1>
+      <p class="lede">Every job starts with a standard mow — add what your lawn actually needs from there. Pay per visit, or subscribe and forget about it.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="quote.html">Get my free quote</a>
+        <a class="btn btn-ghost" href="#pricing" style="color:#fff;border-color:rgba(255,255,255,0.55)">See pricing</a>
+      </div>
+    </div>
+    <div class="ba-slider" role="img" aria-label="Before and after comparison: an overgrown lawn, and the same lawn freshly mowed edge to edge">
+      <div class="ba-slider-after">
+        <img src="https://images.unsplash.com/photo-1782511295240-2d55c11776ec?fm=jpg&q=80&w=1200&auto=format&fit=crop" alt="" aria-hidden="true">
+      </div>
+      <div class="ba-slider-before">
+        <img src="https://images.unsplash.com/photo-1783858826547-d41a2bb97d73?fm=jpg&q=80&w=1200&auto=format&fit=crop" alt="" aria-hidden="true">
+      </div>
+      <div class="ba-slider-line"></div>
+      <div class="ba-slider-handle">↔</div>
+      <span class="ba-slider-label ba-slider-label-before">Before</span>
+      <span class="ba-slider-label ba-slider-label-after">After</span>
+      <input type="range" min="0" max="100" value="50" class="ba-slider-range" aria-label="Drag to compare the before and after photos">
+    </div>
   </div>
 </section>
 
@@ -98,7 +117,7 @@
   </div>
 </section>
 
-<section style="background:var(--surface-2);">
+<section id="pricing" style="background:var(--surface-2);">
   <div class="wrap">
     <div class="section-head">
       <span class="kicker">Pricing</span>
@@ -149,27 +168,27 @@
       <span class="kicker">FAQ</span>
       <h2>Common questions</h2>
     </div>
-    <div style="display:grid;gap:16px;max-width:760px;">
-      <div class="service-card">
-        <h3 style="font-size:1rem;">Do I need to be home?</h3>
-        <p style="margin-top:6px;">Not if there's street or side-gate access straight to the lawn — just leave a gate code or access notes on the quote form. If getting to the lawn means going through your garage or the house itself, you'll need to be home (or arrange access) so we can get through — let us know when you request your quote so it's not a surprise on the day.</p>
-      </div>
-      <div class="service-card">
-        <h3 style="font-size:1rem;">What if it's raining on the day?</h3>
-        <p style="margin-top:6px;">Light rain's fine. For genuinely wet ground or a storm, we'll message you to reschedule — no fee for that.</p>
-      </div>
-      <div class="service-card">
-        <h3 style="font-size:1rem;">How do I pay?</h3>
-        <p style="margin-top:6px;">Bank transfer. A deposit (or 20% of the quoted price, whichever's higher) confirms your booking within 24 hours of accepting the quote; the rest is due on the day.</p>
-      </div>
-      <div class="service-card">
-        <h3 style="font-size:1rem;">What if I'm not happy with the job?</h3>
-        <p style="margin-top:6px;">Let us know within 24 hours of the mow and we'll make it right — usually by coming back to fix whatever's wrong. We don't offer refunds, but we're not leaving a job half-done either.</p>
-      </div>
-      <div class="service-card">
-        <h3 style="font-size:1rem;">Can I cancel the monthly subscription?</h3>
-        <p style="margin-top:6px;">Yes, anytime — no lock-in contract. Just let us know before the next scheduled visit.</p>
-      </div>
+    <div style="display:grid;gap:12px;max-width:760px;">
+      <details class="faq-item">
+        <summary>Do I need to be home?</summary>
+        <p>Not if there's street or side-gate access straight to the lawn — just leave a gate code or access notes on the quote form. If getting to the lawn means going through your garage or the house itself, you'll need to be home (or arrange access) so we can get through — let us know when you request your quote so it's not a surprise on the day.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What if it's raining on the day?</summary>
+        <p>Light rain's fine. For genuinely wet ground or a storm, we'll message you to reschedule — no fee for that.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How do I pay?</summary>
+        <p>Bank transfer. A deposit (or 20% of the quoted price, whichever's higher) confirms your booking within 24 hours of accepting the quote; the rest is due on the day.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What if I'm not happy with the job?</summary>
+        <p>Let us know within 24 hours of the mow and we'll make it right — usually by coming back to fix whatever's wrong. We don't offer refunds, but we're not leaving a job half-done either.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I cancel the monthly subscription?</summary>
+        <p>Yes, anytime — no lock-in contract. Just let us know before the next scheduled visit.</p>
+      </details>
     </div>
   </div>
 </section>
@@ -202,4 +221,20 @@
   </div>
 </footer>
 
+<script>
+  document.querySelectorAll('.ba-slider').forEach(function (root) {
+    var range = root.querySelector('.ba-slider-range');
+    var before = root.querySelector('.ba-slider-before');
+    var line = root.querySelector('.ba-slider-line');
+    var handle = root.querySelector('.ba-slider-handle');
+    function update() {
+      var v = range.value;
+      before.style.clipPath = 'inset(0 ' + (100 - v) + '% 0 0)';
+      line.style.left = v + '%';
+      handle.style.left = v + '%';
+    }
+    range.addEventListener('input', update);
+    update();
+  });
+</script>
 <script src="assets/kill-switch.js"></script>

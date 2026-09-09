@@ -525,6 +525,65 @@ textarea { resize: vertical; min-height: 90px; font-family: var(--font-body); }
 .success-panel h3 { font-size: 1.4rem; margin-bottom: 8px; }
 .success-panel p { color: var(--text-muted); }
 
+/* ---------- Before/after comparison slider ---------- */
+.ba-slider {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  aspect-ratio: 4 / 3;
+  background: var(--surface-2);
+  transform: rotate(-1.2deg);
+}
+.ba-slider img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  -webkit-user-drag: none; user-select: none;
+}
+.ba-slider-before { clip-path: inset(0 50% 0 0); }
+.ba-slider-line {
+  position: absolute; top: 0; bottom: 0; left: 50%; width: 3px;
+  background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+  transform: translateX(-50%); pointer-events: none;
+}
+.ba-slider-handle {
+  position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
+  border-radius: 50%; background: #fff; color: var(--text);
+  display: grid; place-items: center; font-size: 1rem;
+  box-shadow: var(--shadow); transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.ba-slider-label {
+  position: absolute; bottom: 14px;
+  background: rgba(10,8,5,0.62); color: #fff;
+  font-weight: 800; font-size: 0.72rem; letter-spacing: .02em;
+  padding: 5px 12px; border-radius: 999px; pointer-events: none;
+}
+.ba-slider-label-before { left: 14px; }
+.ba-slider-label-after { right: 14px; }
+.ba-slider-range {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0;
+  opacity: 0; cursor: ew-resize; appearance: none; -webkit-appearance: none;
+}
+.ba-slider-range::-webkit-slider-thumb { -webkit-appearance: none; width: 100%; height: 100%; }
+.ba-slider-range::-moz-range-thumb { width: 100%; height: 100%; border: none; background: transparent; }
+
+/* ---------- FAQ accordion ---------- */
+.faq-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 18px 22px;
+}
+.faq-item summary {
+  cursor: pointer; font-weight: 700; font-size: 1rem; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+"; font-size: 1.3rem; font-weight: 400; color: var(--text-muted); flex-shrink: 0;
+}
+.faq-item[open] summary::after { content: "\2212"; }
+.faq-item p { margin-top: 12px; color: var(--text-muted); font-size: 0.95rem; }
+
 /* ---------- Articles ---------- */
 .article { max-width: 700px; }
 .article h2 { font-size: clamp(1.5rem, 2.6vw, 1.9rem); margin-bottom: 22px; }
