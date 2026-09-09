@@ -1,16 +1,16 @@
 :root {
-  --bg: #FBF8EF;
+  --bg: #F7F5EA;
   --surface: #FFFFFF;
-  --surface-2: #F3F0E4;
-  --text: #211D17;
-  --text-muted: #6B6459;
-  --primary: #2E9E4F;
-  --primary-dark: #1D7238;
-  --primary-tint: #E3F4E7;
-  --accent: #FF6A1A;
-  --accent-dark: #C2490A;
-  --accent-soft: #FFD166;
-  --border: #E4E2D6;
+  --surface-2: #E9EFE1;
+  --text: #1E271C;
+  --text-muted: #5C6656;
+  --primary: #3E6B44;
+  --primary-dark: #22392A;
+  --primary-tint: #E2ECDD;
+  --accent: #C98A2B;
+  --accent-dark: #9C6A1D;
+  --accent-soft: #EFD9A6;
+  --border: #DCE3D2;
   --shadow: 0 20px 45px -25px rgba(22, 35, 26, 0.45);
   --radius-lg: 28px;
   --radius-md: 18px;
@@ -21,33 +21,33 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0F1A11;
+    --bg: #101B12;
     --surface: #17241A;
     --surface-2: #1E2C20;
-    --text: #F2EFE7;
-    --text-muted: #A8A296;
-    --primary: #4FCB74;
-    --primary-dark: #2E9E4F;
-    --primary-tint: #1C3123;
-    --accent: #FF8A42;
-    --accent-dark: #FFA766;
-    --accent-soft: #FFD166;
+    --text: #F0EFE4;
+    --text-muted: #A5AC9B;
+    --primary: #6B9A6E;
+    --primary-dark: #3E6B44;
+    --primary-tint: #213524;
+    --accent: #D9A455;
+    --accent-dark: #F0C179;
+    --accent-soft: #EFD9A6;
     --border: #2A3A2C;
     --shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.6);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0F1A11;
+  --bg: #101B12;
   --surface: #17241A;
   --surface-2: #1E2C20;
-  --text: #F2EFE7;
-  --text-muted: #A8A296;
-  --primary: #4FCB74;
-  --primary-dark: #2E9E4F;
-  --primary-tint: #1C3123;
-  --accent: #FF8A42;
-  --accent-dark: #FFA766;
-  --accent-soft: #FFD166;
+  --text: #F0EFE4;
+  --text-muted: #A5AC9B;
+  --primary: #6B9A6E;
+  --primary-dark: #3E6B44;
+  --primary-tint: #213524;
+  --accent: #D9A455;
+  --accent-dark: #F0C179;
+  --accent-soft: #EFD9A6;
   --border: #2A3A2C;
   --shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.6);
 }
@@ -150,8 +150,8 @@ nav.links a:hover, nav.links a[aria-current="page"] { color: var(--text); }
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
-.btn-primary { background: var(--accent); color: #1A1200; box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
-.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--primary-dark); color: #F7F5EA; box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--primary-dark) 70%, transparent); }
+.btn-primary:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--primary-dark) 85%, black); }
 .btn-ghost { background: transparent; color: var(--text); border: 2px solid var(--border); }
 .btn-ghost:hover { border-color: var(--accent); }
 .btn-block { width: 100%; justify-content: center; padding: 15px 22px; font-size: 1rem; }
@@ -192,7 +192,7 @@ nav.links a:hover, nav.links a[aria-current="page"] { color: var(--text); }
   gap: 8px;
   width: fit-content;
   background: rgba(255,255,255,0.85);
-  color: var(--accent-dark);
+  color: var(--primary-dark);
   font-weight: 700;
   font-size: 0.88rem;
   padding: 7px 14px;
@@ -232,7 +232,7 @@ nav.links a:hover, nav.links a[aria-current="page"] { color: var(--text); }
 }
 .hero-card .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
 .stat { border-radius: var(--radius-sm); background: var(--surface-2); padding: 16px; }
-.stat b { font-family: var(--font-display); font-size: 1.5rem; display: block; color: var(--accent-dark); }
+.stat b { font-family: var(--font-display); font-size: 1.5rem; display: block; color: var(--primary-dark); }
 .stat span { font-size: 0.82rem; color: var(--text-muted); }
 
 /* ---------- Sections ---------- */
@@ -338,7 +338,7 @@ a.service-card { display: block; text-decoration: none; color: inherit; transiti
 a.service-card:hover { border-color: var(--accent); border-top-color: var(--accent); transform: translateY(-2px); }
 .service-card .badge {
   position: absolute; top: -12px; left: 22px;
-  background: var(--accent); color: #1A1200;
+  background: var(--primary-dark); color: #F7F5EA;
   font-weight: 800; font-size: 0.72rem; letter-spacing: .03em;
   padding: 4px 12px; border-radius: 999px;
 }
@@ -362,7 +362,7 @@ a.service-card:hover { border-color: var(--accent); border-top-color: var(--acce
 .price-card.featured { border-color: var(--accent); box-shadow: var(--shadow); }
 .price-card .badge {
   position: absolute; top: -12px; left: 26px;
-  background: var(--accent); color: #1A1200;
+  background: var(--primary-dark); color: #F7F5EA;
   font-weight: 800; font-size: 0.72rem; letter-spacing: .03em;
   padding: 4px 12px; border-radius: 999px;
 }
@@ -402,6 +402,30 @@ a.service-card:hover { border-color: var(--accent); border-top-color: var(--acce
 }
 .step h3 { font-size: 1.1rem; margin-bottom: 6px; }
 .step p { color: var(--text-muted); font-size: 0.95rem; }
+
+/* ---------- Dark band (full-bleed forest-green section) ---------- */
+.section-dark { background: var(--primary-dark); color: #F3F1E4; }
+.section-dark .kicker, .section-dark h2, .section-dark h3 { color: #FBFAF3; }
+.section-dark .kicker::before { background: repeating-linear-gradient(90deg, var(--accent-soft) 0 6px, var(--accent) 6px 12px); }
+.section-dark .section-head p { color: rgba(251,250,243,0.75); }
+.section-dark .step .num { background: #FBFAF3; color: var(--primary-dark); }
+.section-dark .step p { color: rgba(251,250,243,0.75); }
+
+/* ---------- CTA banner (photo + dark overlay) ---------- */
+.cta-banner {
+  position: relative; overflow: hidden; isolation: isolate;
+  padding: 96px 24px; text-align: center; color: #F6F3E8;
+  background:
+    linear-gradient(180deg, rgba(15,23,14,0.55) 0%, rgba(15,23,14,0.88) 100%),
+    var(--banner-img) center/cover no-repeat;
+}
+.cta-banner .section-head { margin: 0 auto 28px; max-width: 560px; }
+.cta-banner .kicker { justify-content: center; color: var(--accent-soft); }
+.cta-banner .kicker::before { background: repeating-linear-gradient(90deg, var(--accent-soft) 0 6px, var(--accent) 6px 12px); }
+.cta-banner h2 { color: #FBFAF3; }
+.cta-banner p { color: rgba(246,243,232,0.82); }
+.cta-banner .btn-primary { background: #FBFAF3; color: var(--primary-dark); }
+.cta-banner .btn-primary:hover { background: #fff; }
 
 .area-panel {
   background: var(--surface); border: 1px solid var(--border);
