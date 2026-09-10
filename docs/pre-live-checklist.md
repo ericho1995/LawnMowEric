@@ -130,6 +130,7 @@ are in `CHANGELOG.md` [Unreleased].
 - [ ] **Confirm the FormSubmit "confirm this form" email** has been
       clicked once (check `ericho995@gmail.com`) — otherwise every real
       submission via that fallback path is silently swallowed.
-- [ ] Decide whether the `0402 764 211` number now live on every page
-      (nav, hero, footer, privacy page, and the site's schema.org data) is
-      the number to keep answering as "The Lawn Care" — it's public now.
+- [x] Decided: `0402 764 211` removed from every page (nav, hero, footer,
+      privacy page, schema.org data) — 2026-09-10. The quote form is now the
+      only public contact path; phone re-added only if/when there's a
+      number Eric's happy to have public.
