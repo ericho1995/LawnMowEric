@@ -61,7 +61,7 @@
       <div class="estimator-head">
         <div>
           <h3>🛰️ Draw your lawn for an instant size &amp; price estimate</h3>
-          <p>Find your address, then draw over the mowable area on the satellite view. We'll calculate the exact area and give you a ballpark price on the spot — optional, but it saves back-and-forth.</p>
+          <p>Find your address and we'll pull up your actual property boundary — trim it down to just the lawn and we'll calculate the exact area and give you a ballpark price on the spot. Optional, but it saves back-and-forth.</p>
         </div>
       </div>
       <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
@@ -88,7 +88,7 @@
         </div>
         <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
       </div>
-      <p class="estimator-note">Estimate only, based on the area you draw for a regularly-mowed lawn — final price is confirmed before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+      <p class="estimator-note">Estimate only, based on the area you draw for a regularly-mowed lawn — final price is confirmed before you book. Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim. Property boundary: Vicmap Property (Victorian Government) — covers Victoria only, so outside Melbourne you'll draw the shape manually.</p>
     </div>
 
     <div class="quote-wrap">
@@ -587,10 +587,55 @@
     document.getElementById('q-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
-  function goToAddress(lat, lon) {
+  // Victoria's own government cadastre (Vicmap Property, via a public,
+  // key-less, CORS-open ArcGIS FeatureServer) — the actual surveyed parcel
+  // boundary for a point, not a guess. Melbourne-only (matches current
+  // service area); silently falls back to manual drawing outside Victoria
+  // or if the service is unreachable.
+  const PARCEL_API = 'https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/services/Vicmap_Property/FeatureServer/0/query';
+
+  async function fetchParcelBoundary(lat, lon) {
+    const url = PARCEL_API + '?geometry=' + lon + ',' + lat +
+      '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects' +
+      '&outFields=OBJECTID&returnGeometry=true&outSR=4326&f=geojson';
+    const controller = new AbortController();
+    const timeout = setTimeout(function () { controller.abort(); }, 6000);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data.features || !data.features.length) return null;
+      return data.features[0];
+    } catch (err) {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function goToAddress(lat, lon) {
     initMap();
+    exitEditMode(false);
+    if (activeHandler) { activeHandler.disable(); activeHandler = null; setDrawingState(false); }
+    if (drawnItems) drawnItems.clearLayers();
+    recalcArea();
+    updateEditAvailability();
     map.setView([lat, lon], 20);
-    setStatus('Found it — draw a box over your lawn, or trace it for an irregular shape.', 'ok');
+    setStatus('Found it — looking up the property boundary…', 'ok');
+
+    const parcel = await fetchParcelBoundary(lat, lon);
+    if (parcel) {
+      const gj = L.geoJSON(parcel, { style: { color: SHAPE_COLOR, weight: 3, fillOpacity: 0.15 } });
+      gj.eachLayer(function (layer) {
+        bindRemovePopup(layer);
+        drawnItems.addLayer(layer);
+      });
+      recalcArea();
+      updateEditAvailability();
+      setStatus('Found your property boundary — drag its edges with "Adjust shape" to trim it down to just the lawn (exclude the house, driveway and garden beds).', 'ok');
+    } else {
+      setStatus('Found the address — draw a box over your lawn, or trace it for an irregular shape.', 'ok');
+    }
   }
 
   async function searchAddress() {
