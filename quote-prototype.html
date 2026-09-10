@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>Get a Quote — The Lawn Care (design prototype)</title>
+<meta name="description" content="Design prototype — not linked from the live site.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
+<link rel="stylesheet" href="assets/styles-prototype.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
+<div style="background:#1A1200;color:#EFD9A6;font-size:0.8rem;font-weight:700;text-align:center;padding:8px 16px;">
+  🎨 DESIGN PROTOTYPE — not the live site, not indexed. Compare against <a href="quote.html" style="color:#fff;text-decoration:underline;">quote.html</a>.
+</div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="topbar-links">
+      <a href="tel:+61402764211">📞 0402 764 211</a>
+      <span>📍 Melbourne inner &amp; northern suburbs</span>
+    </div>
+    <div class="topbar-links">
+      <span>🌱 Now booking</span>
+    </div>
+  </div>
+</div>
+
+<header class="site">
+  <div class="nav">
+    <a class="logo" href="index-prototype.html">
+      <img class="logo-mark" src="assets/logo-icon.svg" alt="">
+      The Lawn Care
+    </a>
+    <nav class="links">
+      <a href="services-prototype.html">Services</a>
+      <a href="work-prototype.html">Our work</a>
+      <a href="how-it-works-prototype.html">How it works</a>
+      <a href="articles-prototype.html">Articles</a>
+      <a href="service-area-prototype.html">Service area</a>
+      <a href="reviews-prototype.html">Reviews</a>
+    </nav>
+    <a class="nav-phone" href="tel:+61402764211">📞 0402 764 211</a>
+    <a class="btn nav-cta" href="quote-prototype.html" aria-current="page">Get a quote</a>
+  </div>
+</header>
+
+<section id="main" class="hero hero-compact">
+  <svg class="hero-blob" viewBox="0 0 400 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M400,0 C300,150 250,300 320,450 C390,600 350,750 250,800 L400,800 L400,0 Z" fill="#29B843" opacity="0.32"/>
+    <path d="M400,60 C330,190 315,330 370,480 C415,600 390,720 320,800 L400,800 L400,60 Z" fill="#ffffff" opacity="0.14"/>
+  </svg>
+  <div class="hero-inner single">
+    <span class="eyebrow">🛰️ Get a quote</span>
+    <h1>Get your quote request in</h1>
+    <p class="lede">Fill this in and we'll come back to you within one business day with a price and a suggested date — or call/text <a href="tel:+61402764211" style="color:#fff;font-weight:700;text-decoration:underline;">0402 764 211</a> if you'd rather talk it through. 🎉 First time booking? Mention it and get $10 off.</p>
+  </div>
+</section>
+
+<section style="padding-top:56px;">
+  <div class="wrap">
+    <div class="estimator">
+      <div class="estimator-head">
+        <div>
+          <h3>🛰️ Size your lawn in two quick steps</h3>
+          <p>Find your address and we'll look up your actual block size — pick roughly how much of it is lawn, then drag the box on the map to fine-tune it if you want to be precise.</p>
+        </div>
+      </div>
+      <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
+      <div class="estimator-search">
+        <input type="text" id="lawn-address" placeholder="Type your address, e.g. 12 Smith St, Brunswick VIC" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="address-suggestions">
+        <button type="button" class="btn btn-ghost" id="lawn-address-search">Find address</button>
+        <div class="address-suggestions" id="address-suggestions" role="listbox"></div>
+      </div>
+      <div id="lawn-map"></div>
+      <div class="estimator-step" style="margin-top:16px;"><span class="estimator-step-num">2</span> How much of it is lawn?</div>
+      <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Search your address above first — we'll size the options to your actual block.</div>
+
+      <div class="size-pick-grid" id="size-pick-block" hidden>
+        <button type="button" class="size-pick-card" data-pct="0.18">
+          <span class="size-pick-title">Just the front yard</span>
+          <span class="size-pick-sub">~18% of the block</span>
+        </button>
+        <button type="button" class="size-pick-card" data-pct="0.40">
+          <span class="size-pick-title">Front &amp; back yards</span>
+          <span class="size-pick-sub">~40% of the block</span>
+        </button>
+        <button type="button" class="size-pick-card" data-pct="0.58">
+          <span class="size-pick-title">Most of the block</span>
+          <span class="size-pick-sub">minus house &amp; driveway</span>
+        </button>
+        <button type="button" class="size-pick-card" data-pct="0.35">
+          <span class="size-pick-title">Not sure</span>
+          <span class="size-pick-sub">use a typical estimate</span>
+        </button>
+      </div>
+
+      <div class="size-pick-grid" id="size-pick-fallback" hidden>
+        <button type="button" class="size-pick-card" data-area="100">
+          <span class="size-pick-title">Small courtyard</span>
+          <span class="size-pick-sub">under 150m²</span>
+        </button>
+        <button type="button" class="size-pick-card" data-area="275">
+          <span class="size-pick-title">Medium yard</span>
+          <span class="size-pick-sub">150–400m²</span>
+        </button>
+        <button type="button" class="size-pick-card" data-area="600">
+          <span class="size-pick-title">Large block</span>
+          <span class="size-pick-sub">400–800m²</span>
+        </button>
+        <button type="button" class="size-pick-card" data-area="900">
+          <span class="size-pick-title">Extra-large</span>
+          <span class="size-pick-sub">800m²+</span>
+        </button>
+      </div>
+
+      <label class="nature-strip-toggle" id="nature-strip-toggle-wrap" hidden>
+        <input type="checkbox" id="nature-strip-toggle">
+        <span>Also mow the nature strip out front? <span class="hint">(council-owned, but most owners still need it done — adds a typical ~20m²)</span></span>
+      </label>
+
+      <div class="estimator-result" id="estimator-result">
+        <div class="figures">
+          <div><b id="estimator-area-m2">–</b><span>m² lawn (est.)</span></div>
+          <div><b id="estimator-area-sqft">–</b><span>sq ft</span></div>
+          <div><b id="estimator-price">–</b><span>est. per standard mow</span></div>
+        </div>
+        <button type="button" class="btn" style="background:var(--primary);color:#fff;" id="estimator-use">Use this for my quote</button>
+      </div>
+      <p class="estimator-note">Estimate only — final price is confirmed before you book. Once you've picked an option, an <b>orange box</b> appears on the map roughly matching that size — drag inside it to move it over your actual lawn, or drag one of its corner dots to resize it (the green outline is just your property boundary for reference, it doesn't move). Overgrown lawns (see "When was it last mowed?" below) attract a surcharge, and edging, hedging, green waste and hard-access sites are quoted separately. Block size: Vicmap Property (Victorian Government) — covers Victoria only, so outside Melbourne you'll pick from typical sizes instead. Map imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+    </div>
+
+    <div class="quote-wrap">
+      <form id="quote-form">
+        <input type="hidden" id="q-area-m2" name="areaM2">
+        <input type="hidden" id="q-estimate-low" name="estimateLow">
+        <input type="hidden" id="q-estimate-high" name="estimateHigh">
+        <div style="position:absolute;left:-9999px;" aria-hidden="true">
+          <label for="q-honey">Leave this field empty</label>
+          <input type="text" id="q-honey" name="_honey" tabindex="-1" autocomplete="off">
+        </div>
+        <div class="quote-grid">
+          <div class="field">
+            <label for="q-name">Full name</label>
+            <input id="q-name" name="name" type="text" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="q-phone">Phone</label>
+            <input id="q-phone" name="phone" type="tel" required autocomplete="tel">
+          </div>
+          <div class="field">
+            <label for="q-email">Email</label>
+            <input id="q-email" name="email" type="email" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="q-suburb">Suburb / postcode</label>
+            <input id="q-suburb" name="suburb" type="text" placeholder="e.g. Brunswick, 3056" required>
+          </div>
+          <div class="field">
+            <label for="q-size">Lawn size<span class="hint"> — or use the block calculator above</span></label>
+            <select id="q-size" name="size" required>
+              <option value="">Select one…</option>
+              <option>Small courtyard (under 150m²)</option>
+              <option>Medium yard (150–400m²)</option>
+              <option>Large block (400–800m²)</option>
+              <option>Extra-large (800m²+)</option>
+              <option>Not sure — happy to estimate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-last-mowed">When was it last mowed?</label>
+            <select id="q-last-mowed" name="lastMowed">
+              <option value="0–2 weeks (regularly maintained)">0–2 weeks (regularly maintained)</option>
+              <option value="2–4 weeks">2–4 weeks</option>
+              <option value="4–8 weeks">4–8 weeks</option>
+              <option value="8+ weeks / very overgrown">8+ weeks / very overgrown</option>
+              <option value="Not sure">Not sure</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-frequency">How often?</label>
+            <select id="q-frequency" name="frequency" required>
+              <option value="">Select one…</option>
+              <option>One-off mow</option>
+              <option>Weekly</option>
+              <option>Fortnightly</option>
+              <option>Monthly</option>
+              <option>Monthly subscription ($85/mo)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-day">Preferred day</label>
+            <select id="q-day" name="day">
+              <option value="Flexible">Flexible / no preference</option>
+              <option>Weekday morning</option>
+              <option>Weekday afternoon</option>
+              <option>Weekend</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Add-ons<span class="hint"> — optional, extra cost, confirmed when we quote (see <a href="services-prototype.html" style="color:var(--primary);">full pricing</a>)</span></label>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.92rem;">
+                <input type="checkbox" name="addonEdging" value="Edge & whipper snip"> Edge &amp; whipper snip (+$18–28)
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.92rem;">
+                <input type="checkbox" name="addonHedge" value="Hedge trimming"> 🌿 Hedge trimming (special intro rate — ask when you quote)
+              </label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="q-extras">Anything else?<span class="hint"> — optional</span></label>
+            <input id="q-extras" name="extras" type="text" placeholder="e.g. dog in the yard, prefer mornings">
+          </div>
+          <div class="field full">
+            <label for="q-notes">Gate code, access notes, anything we should know</label>
+            <textarea id="q-notes" name="notes" placeholder="Side gate is unlocked, watch for the sprinkler head near the fence…"></textarea>
+          </div>
+          <div class="field full">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+              <input type="checkbox" id="q-no-bin" name="noGreenBin" value="yes">
+              I don't have my own green waste bin (clippings would need to be taken away)
+            </label>
+          </div>
+        </div>
+        <div class="form-foot">
+          <span class="form-note">We'll only use these details to quote and book your mow — never shared or sold.</span>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span id="quote-status" role="status" aria-live="polite"></span>
+            <button class="btn" style="background:var(--primary);color:#fff;" type="submit" id="quote-submit">Send my request</button>
+          </div>
+        </div>
+      </form>
+      <div class="success-panel" id="quote-success" style="display:none;" role="status" aria-live="polite">
+        <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Request received, <span id="success-name">there</span>.</h3>
+        <p>We'll be in touch within one business day with a quote and a suggested date. To lock in your booking, a small deposit by bank transfer is required within 24 hours of accepting your quote — details come with it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="logo"><img class="logo-mark" src="assets/logo-icon.svg" alt="" style="width:28px;height:28px;">The Lawn Care</div>
+      <div class="footer-links">
+        <a href="services-prototype.html">Services</a>
+        <a href="work-prototype.html">Our work</a>
+        <a href="how-it-works-prototype.html">How it works</a>
+        <a href="articles-prototype.html">Articles</a>
+        <a href="service-area-prototype.html">Service area</a>
+        <a href="reviews-prototype.html">Reviews</a>
+        <a href="quote-prototype.html">Get a quote</a>
+        <a href="privacy-prototype.html">Privacy policy</a>
+      </div>
+    </div>
+    <div class="footer-fine">
+      <span>© 2026 The Lawn Care · ABN 79 369 208 780 · Melbourne, VIC · <a href="tel:+61402764211" style="color:#3F4A3A;text-decoration:underline;">0402 764 211</a></span>
+      <a href="admin-prototype.html">Admin (private link)</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/kill-switch.js"></script>
+
+<script>
+(function () {
+  // ---- Quote form submission ----
+  const form = document.getElementById('quote-form');
+  const statusEl = document.getElementById('quote-status');
+  const successPanel = document.getElementById('quote-success');
+  let fallbackLink = null;
+
+  const GAS_WEBHOOK_URL = 'PASTE_YOUR_DEPLOYED_APPS_SCRIPT_URL_HERE';
+
+  async function sendViaAppsScript(data) {
+    if (!GAS_WEBHOOK_URL || GAS_WEBHOOK_URL.indexOf('PASTE_') === 0) return false;
+    try {
+      const res = await fetch(GAS_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'submitQuote', ...data })
+      });
+      if (!res.ok) return false;
+      const json = await res.json();
+      return !!json.ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  async function sendViaFormBackend(data) {
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/ericho995@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          _subject: 'New quote request - The Lawn Care (PROTOTYPE PAGE)',
+          _replyto: data.email,
+          _captcha: 'false',
+          _template: 'table'
+        })
+      });
+      return res.ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    const submitBtn = document.getElementById('quote-submit');
+
+    if (data._honey) {
+      form.style.display = 'none';
+      document.getElementById('success-name').textContent = data.name || 'there';
+      successPanel.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    statusEl.dataset.state = '';
+    statusEl.textContent = 'Sending…';
+    if (fallbackLink) { fallbackLink.remove(); fallbackLink = null; }
+
+    const sent = (await sendViaAppsScript(data)) || (await sendViaFormBackend(data));
+    if (sent) {
+      form.style.display = 'none';
+      document.getElementById('success-name').textContent = data.name || 'there';
+      successPanel.style.display = 'block';
+      submitBtn.disabled = false;
+      return;
+    }
+    statusEl.dataset.state = 'error';
+    statusEl.textContent = "Couldn't send that automatically — email us instead ↴";
+    const body = encodeURIComponent(
+      `Name: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSuburb: ${data.suburb}\nLawn size: ${data.size}${data.areaM2 ? ` (mapped: ${Math.round(data.areaM2)}m², est. $${data.estimateLow}-$${data.estimateHigh})` : ''}\nLast mowed: ${data.lastMowed || 'Not sure'}\nFrequency: ${data.frequency}\nPreferred day: ${data.day}\nAdd-ons: ${[data.addonEdging, data.addonHedge].filter(Boolean).join(', ') || 'None selected'}\nNo own green waste bin: ${data.noGreenBin ? 'Yes' : 'No'}\nExtras: ${data.extras || '-'}\nNotes: ${data.notes || '-'}`
+    );
+    fallbackLink = document.createElement('a');
+    fallbackLink.href = `mailto:ericho995@gmail.com?subject=The Lawn Care quote request&body=${body}`;
+    fallbackLink.textContent = 'Open email draft';
+    fallbackLink.className = 'btn btn-ghost';
+    fallbackLink.style.marginLeft = '10px';
+    statusEl.after(fallbackLink);
+    submitBtn.disabled = false;
+  });
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/7.4.0/turf.min.js"></script>
+<script>
+(function () {
+  // ---- Pricing rules ----
+  const PRICING = {
+    bands: [
+      { max: 150, low: 55, high: 70 },
+      { max: 400, low: 75, high: 95 },
+      { max: 800, low: 105, high: 140 }
+    ]
+  };
+
+  function computeEstimate(areaM2) {
+    const band = PRICING.bands.find(function (b) { return areaM2 <= b.max; });
+    if (!band) return { quoteOnRequest: true };
+    return { low: band.low, high: band.high };
+  }
+
+  const mapContainer = document.getElementById('lawn-map');
+  if (!mapContainer) return;
+
+  const statusEl = document.getElementById('estimator-status');
+  const resultEl = document.getElementById('estimator-result');
+  const areaM2El = document.getElementById('estimator-area-m2');
+  const areaSqftEl = document.getElementById('estimator-area-sqft');
+  const priceEl = document.getElementById('estimator-price');
+  const useBtn = document.getElementById('estimator-use');
+  const addressInput = document.getElementById('lawn-address');
+  const searchBtn = document.getElementById('lawn-address-search');
+  const blockPicker = document.getElementById('size-pick-block');
+  const fallbackPicker = document.getElementById('size-pick-fallback');
+  const natureStripWrap = document.getElementById('nature-strip-toggle-wrap');
+  const natureStripToggle = document.getElementById('nature-strip-toggle');
+
+  const DEFAULT_HINT = 'Search your address above first — we\'ll size the options to your actual block.';
+  const SHAPE_COLOR = '#1E9F35'; // the real property boundary outline (reference only, not interactive)
+  const BOX_COLOR = '#FF6A1A'; // the adjustable estimate box — a different color on purpose, so it's obvious which shape you can drag
+  const NATURE_STRIP_M2 = 20; // typical council-verge allowance, added on top of the picked size
+
+  // Free Mapbox account + public token gets noticeably sharper/deeper-zoom imagery
+  // than Esri's free tier in most of Melbourne. Sign up free at mapbox.com, grab the
+  // default public token (starts "pk.") from your account's Tokens page, and paste it
+  // below. Left as a placeholder, this falls back to the Esri imagery silently — no
+  // regression either way, same pattern as GAS_WEBHOOK_URL above.
+  const MAPBOX_TOKEN = 'PASTE_YOUR_MAPBOX_PUBLIC_TOKEN_HERE';
+  const useMapbox = MAPBOX_TOKEN && MAPBOX_TOKEN.indexOf('PASTE_') !== 0;
+  const MAP_ZOOM = 20; // matches the live quote.html's zoom level — the pixelation was already present there at z20, capping to 19 just made the view less zoomed-in without actually fixing it
+
+  let map = null;
+  let parcelLayer = null;
+  let blockAreaM2 = 0;
+  let currentAreaM2 = 0;
+  let currentEstimate = null;
+  let boxCenter = null; // {lat, lng} — where the resizable box gets placed
+  let boxBounds = null; // {n, s, e, w}
+  let boxRect = null;
+  let boxHandles = [];
+  let boxManuallyAdjusted = false;
+
+  function setStatus(text, state) {
+    statusEl.textContent = text || DEFAULT_HINT;
+    if (state) statusEl.dataset.state = state; else statusEl.removeAttribute('data-state');
+  }
+
+  function initMap() {
+    if (map) return;
+    map = L.map(mapContainer, { center: [-37.8136, 144.9631], zoom: 13 });
+
+    if (useMapbox) {
+      // satellite-streets-v12 bundles imagery + road/place labels in one layer,
+      // same combined look as the Esri imagery+reference-labels pair below.
+      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=' + MAPBOX_TOKEN, {
+        maxZoom: 22,
+        crossOrigin: true,
+        attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.digitalglobe.com/">DigitalGlobe</a>'
+      }).addTo(map);
+    } else {
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        // Matches the live quote.html exactly (maxZoom 20) — a Clarity-endpoint swap
+        // and a maxZoom-19 cap were both tried here and both made things look worse,
+        // not better. Reverted to the original known-good config.
+        maxZoom: 20,
+        crossOrigin: true,
+        attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
+      }).addTo(map);
+
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 20,
+        opacity: 0.9,
+        crossOrigin: true
+      }).addTo(map);
+    }
+  }
+
+  // ---- Resizable estimate box (plain Leaflet corner-drag handles — no drawing library) ----
+  function metersToLatLngDelta(lat, metersNS, metersEW) {
+    return {
+      dLat: metersNS / 111320,
+      dLng: metersEW / (111320 * Math.cos(lat * Math.PI / 180))
+    };
+  }
+
+  function boxCorners() {
+    return {
+      nw: [boxBounds.n, boxBounds.w], ne: [boxBounds.n, boxBounds.e],
+      se: [boxBounds.s, boxBounds.e], sw: [boxBounds.s, boxBounds.w]
+    };
+  }
+
+  function boxAreaM2() {
+    if (!boxBounds) return 0;
+    const ring = [
+      [boxBounds.w, boxBounds.n], [boxBounds.e, boxBounds.n],
+      [boxBounds.e, boxBounds.s], [boxBounds.w, boxBounds.s], [boxBounds.w, boxBounds.n]
+    ];
+    try { return turf.area({ type: 'Polygon', coordinates: [ring] }); } catch (e) { return 0; }
+  }
+
+  function syncBoxLayers() {
+    boxRect.setBounds([[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]]);
+    const corners = boxCorners();
+    boxHandles.forEach(function (m) { m.setLatLng(corners[m._cornerKey]); });
+  }
+
+  function onHandleDrag(key, marker) {
+    const ll = marker.getLatLng();
+    if (key === 'nw') { boxBounds.n = ll.lat; boxBounds.w = ll.lng; }
+    if (key === 'ne') { boxBounds.n = ll.lat; boxBounds.e = ll.lng; }
+    if (key === 'se') { boxBounds.s = ll.lat; boxBounds.e = ll.lng; }
+    if (key === 'sw') { boxBounds.s = ll.lat; boxBounds.w = ll.lng; }
+    boxRect.setBounds([[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]]);
+    const corners = boxCorners();
+    boxHandles.forEach(function (m) { if (m._cornerKey !== key) m.setLatLng(corners[m._cornerKey]); });
+    boxManuallyAdjusted = true;
+    const area = boxAreaM2();
+    showResult(area);
+    setStatus('Box resized — ' + Math.round(area) + 'm² now selected. Use it below, or pick a different option.', 'ok');
+  }
+
+  // Whole-box drag-to-move: L.Rectangle has no built-in drag support (that's marker-only
+  // in core Leaflet), so this is done by hand — track the pointer from mousedown on the
+  // rectangle itself, translate boxBounds by the pointer's delta, and disable map panning
+  // for the duration so dragging the box doesn't also drag the map underneath it.
+  function onBoxMoveStart(e) {
+    L.DomEvent.stopPropagation(e);
+    map.dragging.disable();
+    const start = e.latlng;
+    const startBounds = { n: boxBounds.n, s: boxBounds.s, e: boxBounds.e, w: boxBounds.w };
+
+    function onMove(ev) {
+      const dLat = ev.latlng.lat - start.lat;
+      const dLng = ev.latlng.lng - start.lng;
+      boxBounds = {
+        n: startBounds.n + dLat, s: startBounds.s + dLat,
+        e: startBounds.e + dLng, w: startBounds.w + dLng
+      };
+      syncBoxLayers();
+    }
+    function onEnd() {
+      map.off('mousemove', onMove);
+      map.off('mouseup', onEnd);
+      map.dragging.enable();
+      boxManuallyAdjusted = true;
+      const area = boxAreaM2();
+      showResult(area);
+      setStatus('Box moved — ' + Math.round(area) + 'm² selected. Use it below, or pick a different option.', 'ok');
+    }
+    map.on('mousemove', onMove);
+    map.on('mouseup', onEnd);
+  }
+
+  function clearBox() {
+    if (boxRect) { map.removeLayer(boxRect); boxRect = null; }
+    boxHandles.forEach(function (m) { map.removeLayer(m); });
+    boxHandles = [];
+    boxBounds = null;
+  }
+
+  function placeBox(centerLat, centerLng, areaM2) {
+    const side = Math.sqrt(Math.max(areaM2, 1));
+    const { dLat, dLng } = metersToLatLngDelta(centerLat, side / 2, side / 2);
+    boxBounds = { n: centerLat + dLat, s: centerLat - dLat, e: centerLng + dLng, w: centerLng - dLng };
+    const bounds = [[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]];
+    if (!boxRect) {
+      boxRect = L.rectangle(bounds, { color: BOX_COLOR, weight: 3, fillOpacity: 0.22, dashArray: '6,4', className: 'estimate-box' }).addTo(map);
+      boxRect.on('mousedown', onBoxMoveStart);
+    } else {
+      boxRect.setBounds(bounds);
+    }
+    const corners = boxCorners();
+    const handleIcon = L.divIcon({ className: 'box-handle', iconSize: [26, 26], iconAnchor: [13, 13] });
+    if (!boxHandles.length) {
+      ['nw', 'ne', 'se', 'sw'].forEach(function (key) {
+        const marker = L.marker(corners[key], { icon: handleIcon, draggable: true, zIndexOffset: 1000 }).addTo(map);
+        marker._cornerKey = key;
+        marker.on('drag', function () { onHandleDrag(key, marker); });
+        boxHandles.push(marker);
+      });
+    } else {
+      boxHandles.forEach(function (m) { m.setLatLng(corners[m._cornerKey]); });
+    }
+  }
+
+  function clearPickers() {
+    blockPicker.hidden = true;
+    fallbackPicker.hidden = true;
+    natureStripWrap.hidden = true;
+    natureStripToggle.checked = false;
+    Array.prototype.forEach.call(blockPicker.children, function (btn) { btn.classList.remove('active'); });
+    Array.prototype.forEach.call(fallbackPicker.children, function (btn) { btn.classList.remove('active'); });
+    resultEl.classList.remove('visible');
+    currentEstimate = null;
+    currentAreaM2 = 0;
+    boxManuallyAdjusted = false;
+    if (map) clearBox();
+  }
+
+  function showResult(areaM2) {
+    currentAreaM2 = areaM2;
+    currentEstimate = computeEstimate(areaM2);
+    areaM2El.textContent = areaM2.toFixed(0);
+    areaSqftEl.textContent = (areaM2 * 10.7639).toFixed(0);
+    priceEl.textContent = currentEstimate.quoteOnRequest
+      ? 'Quote on request'
+      : '$' + currentEstimate.low + '–$' + currentEstimate.high;
+    resultEl.classList.add('visible');
+  }
+
+  function selectCard(container, btn) {
+    Array.prototype.forEach.call(container.children, function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+
+  function applySelection(baseAreaM2) {
+    boxManuallyAdjusted = false;
+    const area = baseAreaM2 + (natureStripToggle.checked ? NATURE_STRIP_M2 : 0);
+    showResult(area);
+    if (boxCenter) placeBox(boxCenter.lat, boxCenter.lng, area);
+    setStatus('Estimate updated — drag the box on the map to fine-tune, or pick a different option.', 'ok');
+  }
+
+  blockPicker.addEventListener('click', function (e) {
+    const btn = e.target.closest('.size-pick-card');
+    if (!btn || !blockAreaM2) return;
+    selectCard(blockPicker, btn);
+    natureStripToggle.checked = (btn === blockPicker.children[0]); // "Just the front yard" — nature strip almost always applies
+    applySelection(blockAreaM2 * parseFloat(btn.dataset.pct));
+  });
+
+  fallbackPicker.addEventListener('click', function (e) {
+    const btn = e.target.closest('.size-pick-card');
+    if (!btn) return;
+    selectCard(fallbackPicker, btn);
+    applySelection(parseFloat(btn.dataset.area));
+  });
+
+  natureStripToggle.addEventListener('change', function () {
+    // If the box has been hand-resized, keep that shape/number — just add or remove the
+    // nature-strip allowance from it, instead of snapping back to the card's base %.
+    if (boxManuallyAdjusted) {
+      const adjusted = currentAreaM2 + (natureStripToggle.checked ? NATURE_STRIP_M2 : -NATURE_STRIP_M2);
+      showResult(Math.max(adjusted, 1));
+      setStatus((natureStripToggle.checked ? 'Added' : 'Removed') + ' the nature-strip allowance — ' + Math.round(currentAreaM2) + 'm² now selected.', 'ok');
+      return;
+    }
+    const activeBlock = blockPicker.querySelector('.size-pick-card.active');
+    const activeFallback = fallbackPicker.querySelector('.size-pick-card.active');
+    if (activeBlock && blockAreaM2) { applySelection(blockAreaM2 * parseFloat(activeBlock.dataset.pct)); return; }
+    if (activeFallback) { applySelection(parseFloat(activeFallback.dataset.area)); }
+  });
+
+  function pickSizeBand(areaM2) {
+    if (areaM2 < 150) return 'Small courtyard (under 150m²)';
+    if (areaM2 <= 400) return 'Medium yard (150–400m²)';
+    if (areaM2 <= 800) return 'Large block (400–800m²)';
+    return 'Extra-large (800m²+)';
+  }
+
+  useBtn.addEventListener('click', function () {
+    if (!currentEstimate || currentAreaM2 < 1) return;
+    document.getElementById('q-area-m2').value = currentAreaM2.toFixed(1);
+    document.getElementById('q-estimate-low').value = currentEstimate.quoteOnRequest ? '' : currentEstimate.low;
+    document.getElementById('q-estimate-high').value = currentEstimate.quoteOnRequest ? '' : currentEstimate.high;
+    document.getElementById('q-size').value = pickSizeBand(currentAreaM2);
+    const suburbInput = document.getElementById('q-suburb');
+    if (!suburbInput.value && addressInput.value) suburbInput.value = addressInput.value;
+    setStatus('Added to your quote request below — scroll down to finish it off.', 'ok');
+    document.getElementById('q-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  const PARCEL_API = 'https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/services/Vicmap_Property/FeatureServer/0/query';
+
+  async function fetchParcelBoundary(lat, lon) {
+    const url = PARCEL_API + '?geometry=' + lon + ',' + lat +
+      '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects' +
+      '&outFields=OBJECTID&returnGeometry=true&outSR=4326&f=geojson';
+    const controller = new AbortController();
+    const timeout = setTimeout(function () { controller.abort(); }, 6000);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data.features || !data.features.length) return null;
+      return data.features[0];
+    } catch (err) {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function goToAddress(lat, lon) {
+    initMap();
+    clearPickers();
+    blockAreaM2 = 0;
+    boxCenter = { lat: lat, lng: lon };
+    if (parcelLayer) { map.removeLayer(parcelLayer); parcelLayer = null; }
+    map.setView([lat, lon], MAP_ZOOM);
+    setStatus('Found it — looking up your block size…', 'ok');
+
+    const parcel = await fetchParcelBoundary(lat, lon);
+    if (parcel) {
+      blockAreaM2 = turf.area(parcel);
+      parcelLayer = L.geoJSON(parcel, { style: { color: SHAPE_COLOR, weight: 3, fillOpacity: 0.12 } }).addTo(map);
+      try {
+        const centroid = turf.centroid(parcel).geometry.coordinates;
+        boxCenter = { lat: centroid[1], lng: centroid[0] };
+      } catch (e) { /* keep the address point as center */ }
+      blockPicker.hidden = false;
+      natureStripWrap.hidden = false;
+      setStatus('Your block is about ' + Math.round(blockAreaM2) + 'm² — how much of it is lawn?', 'ok');
+    } else {
+      fallbackPicker.hidden = false;
+      natureStripWrap.hidden = false;
+      setStatus('Couldn\'t look up an exact block size for this address — pick the closest size below.', 'ok');
+    }
+  }
+
+  async function searchAddress() {
+    const query = addressInput.value.trim();
+    if (!query) return;
+    closeSuggestions();
+    setStatus('Searching…');
+    searchBtn.disabled = true;
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=au&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('search failed');
+      const results = await res.json();
+      if (!results.length) {
+        setStatus('Could not find that address — try adding suburb and state.', 'error');
+        return;
+      }
+      goToAddress(parseFloat(results[0].lat), parseFloat(results[0].lon));
+    } catch (err) {
+      initMap();
+      setStatus('Address search is unavailable right now — pick a typical size below instead.', 'error');
+      fallbackPicker.hidden = false;
+      natureStripWrap.hidden = false;
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  const suggestionsEl = document.getElementById('address-suggestions');
+  let suggestDebounce = null;
+  let suggestQueryId = 0;
+  let currentSuggestions = [];
+  let activeSuggestion = -1;
+
+  function closeSuggestions() {
+    suggestionsEl.innerHTML = '';
+    currentSuggestions = [];
+    activeSuggestion = -1;
+    addressInput.setAttribute('aria-expanded', 'false');
+  }
+
+  function updateActiveSuggestion(items) {
+    items.forEach(function (item, i) { item.classList.toggle('active', i === activeSuggestion); });
+    if (activeSuggestion >= 0 && items[activeSuggestion]) items[activeSuggestion].scrollIntoView({ block: 'nearest' });
+  }
+
+  function selectSuggestion(result) {
+    addressInput.value = result.display_name;
+    closeSuggestions();
+    goToAddress(parseFloat(result.lat), parseFloat(result.lon));
+  }
+
+  function renderSuggestions(results) {
+    suggestionsEl.innerHTML = '';
+    activeSuggestion = -1;
+    results.forEach(function (result) {
+      const item = document.createElement('div');
+      item.className = 'address-suggestion';
+      item.setAttribute('role', 'option');
+      item.textContent = result.display_name;
+      item.addEventListener('mousedown', function (e) { e.preventDefault(); selectSuggestion(result); });
+      suggestionsEl.appendChild(item);
+    });
+    addressInput.setAttribute('aria-expanded', results.length ? 'true' : 'false');
+  }
+
+  async function fetchSuggestions(query) {
+    const queryId = ++suggestQueryId;
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=au&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return;
+      const results = await res.json();
+      if (queryId !== suggestQueryId) return;
+      currentSuggestions = results;
+      renderSuggestions(results);
+    } catch (err) { /* silent */ }
+  }
+
+  addressInput.addEventListener('input', function () {
+    clearTimeout(suggestDebounce);
+    const query = addressInput.value.trim();
+    if (query.length < 3) { closeSuggestions(); return; }
+    suggestDebounce = setTimeout(function () { fetchSuggestions(query); }, 400);
+  });
+
+  addressInput.addEventListener('keydown', function (e) {
+    const items = suggestionsEl.querySelectorAll('.address-suggestion');
+    if (e.key === 'ArrowDown' && items.length) {
+      e.preventDefault();
+      activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1);
+      updateActiveSuggestion(items);
+    } else if (e.key === 'ArrowUp' && items.length) {
+      e.preventDefault();
+      activeSuggestion = Math.max(activeSuggestion - 1, 0);
+      updateActiveSuggestion(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeSuggestion >= 0 && currentSuggestions[activeSuggestion]) {
+        selectSuggestion(currentSuggestions[activeSuggestion]);
+      } else {
+        searchAddress();
+      }
+    } else if (e.key === 'Escape') {
+      closeSuggestions();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.estimator-search')) closeSuggestions();
+  });
+
+  searchBtn.addEventListener('click', searchAddress);
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { initMap(); observer.disconnect(); }
+      });
+    }, { rootMargin: '200px' });
+    observer.observe(mapContainer);
+  } else {
+    initMap();
+  }
+})();
+</script>
