@@ -19,7 +19,7 @@ styles: leaflet
 
       <div class="form-card estimator" id="estimator">
         <h2 class="form-section-title">Size your lawn <span class="hint">optional</span></h2>
-        <p class="form-section-intro">Find your address and we'll look up your block size. Pick roughly how much of it is lawn for a price range on the spot, then move or resize the box on the map if you want to be precise. <a href="#quote-form">Skip to the form</a></p>
+        <p class="form-section-intro">Find your address and we'll look up your block and take the house off it. Pick roughly how much of the yard is lawn for a price range on the spot, then move or resize the box on the map if you want to be precise. <a href="#quote-form">Skip to the form</a></p>
 
         <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
         <div class="estimator-search">
@@ -29,24 +29,29 @@ styles: leaflet
           <div class="address-suggestions" id="address-suggestions" role="listbox" aria-label="Address suggestions"></div>
         </div>
         <div id="lawn-map"></div>
+        <ul class="map-legend" aria-label="Map key">
+          <li><span class="swatch swatch-block" aria-hidden="true"></span>Your block</li>
+          <li><span class="swatch swatch-house" aria-hidden="true"></span>House</li>
+          <li><span class="swatch swatch-box" aria-hidden="true"></span>Lawn estimate: drag to move, drag a corner to resize</li>
+        </ul>
 
         <div class="estimator-step estimator-step-spaced"><span class="estimator-step-num">2</span> How much of it is lawn?</div>
         <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Search your address above first — we'll size the options to your actual block.</div>
 
         <div class="size-pick-grid" id="size-pick-block" hidden>
-          <button type="button" class="size-pick-card" data-pct="0.18">
+          <button type="button" class="size-pick-card" data-pct="0.18" data-yard="0.30">
             <span class="size-pick-title">Just the front yard</span>
             <span class="size-pick-sub">About 18% of the block</span>
           </button>
-          <button type="button" class="size-pick-card" data-pct="0.40">
+          <button type="button" class="size-pick-card" data-pct="0.40" data-yard="0.65">
             <span class="size-pick-title">Front and back yards</span>
             <span class="size-pick-sub">About 40% of the block</span>
           </button>
-          <button type="button" class="size-pick-card" data-pct="0.58">
-            <span class="size-pick-title">Most of the block</span>
-            <span class="size-pick-sub">Minus the house and driveway</span>
+          <button type="button" class="size-pick-card" data-pct="0.58" data-yard="0.90">
+            <span class="size-pick-title">Nearly all the yard</span>
+            <span class="size-pick-sub">Minus the driveway and paths</span>
           </button>
-          <button type="button" class="size-pick-card" data-pct="0.35">
+          <button type="button" class="size-pick-card" data-pct="0.35" data-yard="0.55">
             <span class="size-pick-title">Not sure</span>
             <span class="size-pick-sub">Use a typical estimate</span>
           </button>
@@ -84,7 +89,7 @@ styles: leaflet
           </div>
           <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
         </div>
-        <p class="estimator-note">An estimate for a regularly mowed lawn; the final price is confirmed before you book. Once you pick an option, an orange box appears on the map at about that size: drag inside it to move it over your lawn, or drag a corner dot to resize it. The green outline is your property boundary, for reference. Overgrown lawns attract a surcharge, and edging, hedging, green waste and hard-to-reach sites are quoted on top. Block size: Vicmap Property (Victoria only — elsewhere, pick a typical size). Imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+        <p class="estimator-note">An estimate for a regularly mowed lawn; the final price is confirmed before you book. The house is taken off using building footprints traced from satellite imagery, which can miss a new build or include a carport or verandah — adjust the box if it looks off. Overgrown lawns attract a surcharge, and edging, hedging, green waste and hard-to-reach sites are quoted on top. Outside Victoria there's no block data, so pick a typical size. Block outline: Vicmap Property &copy; State of Victoria (DTP), CC BY 4.0. House footprints &copy; Overture Maps Foundation and OpenStreetMap contributors, ODbL. Imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
       </div>
 
       <div class="form-card" id="quote-card">

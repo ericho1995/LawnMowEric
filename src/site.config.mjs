@@ -29,6 +29,12 @@ export default {
   // default. Leave the placeholder to keep using Esri.
   mapboxToken: 'PASTE_YOUR_MAPBOX_PUBLIC_TOKEN_HERE',
 
+  // House footprints on the quote map come from Overture Maps. The page looks
+  // up the newest monthly release itself; this is only the fallback if that
+  // lookup fails. Old releases are deleted after a few months, so bump it
+  // occasionally (see https://stac.overturemaps.org/catalog.json).
+  overtureRelease: '2026-08-19.0',
+
   offer: {
     firstMowDiscount: 10
   },

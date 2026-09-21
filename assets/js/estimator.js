@@ -1,10 +1,13 @@
-// Lawn-size estimator on quote.html. Address search (OSM Nominatim) ->
-// real block size from Vicmap Property -> "how much of it is lawn?" cards
-// (or typical sizes outside Victoria) -> an orange box on the map the
-// customer can move and resize to fine-tune, plus an optional nature-strip
-// allowance. Fills the quote form's hidden area/estimate fields and lawn
-// size on "Use this for my quote". Needs window.TLC_CONFIG (inlined by the
-// build) and Leaflet + Turf loaded first.
+// Lawn-size estimator on quote.html (an ES module). Address search (OSM
+// Nominatim) -> real block from Vicmap Property -> house footprints from
+// Overture Maps, subtracted to get the yard -> "how much of it is lawn?"
+// cards (block percentages when there's no footprint; typical sizes outside
+// Victoria) -> an orange box on the map the customer can move and resize,
+// plus an optional nature-strip allowance. Fills the quote form's hidden
+// area/estimate fields and lawn size on "Use this for my quote". Needs
+// window.TLC_CONFIG (inlined by the build) and Leaflet + Turf loaded first.
+import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './footprint-lookup.mjs';
+
 (function () {
   // ---- Pricing rules ----
   // Bands come from src/site.config.mjs (pricing.bands) via window.TLC_CONFIG,
@@ -47,9 +50,15 @@
   const useMapbox = !!MAPBOX_TOKEN;
   const MAP_ZOOM = 20; // matches the live quote.html's zoom level — the pixelation was already present there at z20, capping to 19 just made the view less zoomed-in without actually fixing it
 
+  const OVERTURE_FALLBACK_RELEASE = window.TLC_CONFIG.overtureRelease || '';
+  const HOUSE_STYLE = { color: '#FFFFFF', weight: 1.5, fillColor: '#5B6470', fillOpacity: 0.6, interactive: false };
+
   let map = null;
   let parcelLayer = null;
+  let houseLayer = null;
   let blockAreaM2 = 0;
+  let yardAreaM2 = 0; // block minus house footprints; 0 when footprints weren't usable
+  let searchSeq = 0; // ignore results from a search the customer has since replaced
   let currentAreaM2 = 0;
   let currentEstimate = null;
   let boxCenter = null; // {lat, lng} — where the resizable box gets placed
@@ -91,6 +100,12 @@
         crossOrigin: true
       }).addTo(map);
     }
+
+    // Short on-map credits (a phone-width map has little room); the full
+    // wording is in the note under the map.
+    map.attributionControl.addAttribution('Blocks &copy; State of Victoria (DTP) CC BY 4.0');
+    map.attributionControl.addAttribution('Buildings &copy; Overture Maps, OSM contributors ODbL');
+    warmUpFootprints(OVERTURE_FALLBACK_RELEASE);
   }
 
   // ---- Resizable estimate box (plain Leaflet corner-drag handles — no drawing library) ----
@@ -213,7 +228,25 @@
     currentEstimate = null;
     currentAreaM2 = 0;
     boxManuallyAdjusted = false;
+    yardAreaM2 = 0;
+    if (houseLayer) { map.removeLayer(houseLayer); houseLayer = null; }
     if (map) clearBox();
+  }
+
+  // Each block card has two shares: of the yard (used when house footprints
+  // were found) and of the whole block (the fallback). The yard shares keep
+  // the original block percentages' calibration, which assumed a house of
+  // roughly 40% of the block — now the real house is subtracted instead.
+  function cardArea(btn) {
+    return yardAreaM2
+      ? yardAreaM2 * parseFloat(btn.dataset.yard)
+      : blockAreaM2 * parseFloat(btn.dataset.pct);
+  }
+
+  function refreshCardLabels() {
+    Array.prototype.forEach.call(blockPicker.children, function (btn) {
+      btn.querySelector('.size-pick-sub').textContent = 'About ' + Math.round(cardArea(btn)) + 'm²';
+    });
   }
 
   function showResult(areaM2) {
@@ -245,7 +278,7 @@
     if (!btn || !blockAreaM2) return;
     selectCard(blockPicker, btn);
     natureStripToggle.checked = (btn === blockPicker.children[0]); // "Just the front yard" — nature strip almost always applies
-    applySelection(blockAreaM2 * parseFloat(btn.dataset.pct));
+    applySelection(cardArea(btn));
   });
 
   fallbackPicker.addEventListener('click', function (e) {
@@ -266,7 +299,7 @@
     }
     const activeBlock = blockPicker.querySelector('.size-pick-card.active');
     const activeFallback = fallbackPicker.querySelector('.size-pick-card.active');
-    if (activeBlock && blockAreaM2) { applySelection(blockAreaM2 * parseFloat(activeBlock.dataset.pct)); return; }
+    if (activeBlock && blockAreaM2) { applySelection(cardArea(activeBlock)); return; }
     if (activeFallback) { applySelection(parseFloat(activeFallback.dataset.area)); }
   });
 
@@ -311,25 +344,43 @@
   }
 
   async function goToAddress(lat, lon) {
+    const seq = ++searchSeq;
     initMap();
     clearPickers();
     blockAreaM2 = 0;
     boxCenter = { lat: lat, lng: lon };
     if (parcelLayer) { map.removeLayer(parcelLayer); parcelLayer = null; }
     map.setView([lat, lon], MAP_ZOOM);
-    setStatus('Found it — looking up your block size…', 'ok');
+    setStatus('Found it — looking up your block and house…', 'ok');
+    prefetchFootprints(lon, lat, OVERTURE_FALLBACK_RELEASE);
 
     const parcel = await fetchParcelBoundary(lat, lon);
+    if (seq !== searchSeq) return;
     if (parcel) {
       blockAreaM2 = turf.area(parcel);
       parcelLayer = L.geoJSON(parcel, { style: { color: SHAPE_COLOR, weight: 3, fillOpacity: 0.12 } }).addTo(map);
+      // Show the whole block (the lawn box may start in the back yard), but
+      // never zoom in past the usual sharp imagery level.
+      map.fitBounds(parcelLayer.getBounds(), { padding: [24, 24], maxZoom: MAP_ZOOM });
       try {
         const centroid = turf.centroid(parcel).geometry.coordinates;
         boxCenter = { lat: centroid[1], lng: centroid[0] };
       } catch (e) { /* keep the address point as center */ }
+
+      const footprint = await findHouseFootprints(parcel, { fallbackRelease: OVERTURE_FALLBACK_RELEASE });
+      if (seq !== searchSeq) return;
+      if (footprint && footprint.usable) {
+        yardAreaM2 = footprint.yardAreaM2;
+        houseLayer = L.geoJSON(turf.featureCollection(footprint.buildings), { style: HOUSE_STYLE, interactive: false }).addTo(map);
+        if (footprint.yardAnchor) boxCenter = { lat: footprint.yardAnchor[1], lng: footprint.yardAnchor[0] };
+        setStatus('Your block is about ' + Math.round(blockAreaM2) + 'm² and the house covers about ' +
+          footprint.houseAreaM2 + 'm², leaving about ' + footprint.yardAreaM2 + 'm² of yard. How much of it is lawn?', 'ok');
+      } else {
+        setStatus('Your block is about ' + Math.round(blockAreaM2) + 'm² — how much of it is lawn?', 'ok');
+      }
+      refreshCardLabels();
       blockPicker.hidden = false;
       natureStripWrap.hidden = false;
-      setStatus('Your block is about ' + Math.round(blockAreaM2) + 'm² — how much of it is lawn?', 'ok');
     } else {
       fallbackPicker.hidden = false;
       natureStripWrap.hidden = false;

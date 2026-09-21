@@ -20,6 +20,17 @@ Full rebuild on branch `site-redesign`. Spec:
   real block size from Vicmap, "how much of it is lawn?" cards, a
   movable/resizable box and a nature-strip option (Leaflet.draw removed).
   Optional Mapbox token in `src/site.config.mjs`.
+- **House footprints subtract the house automatically.** Building outlines
+  from Overture Maps (Microsoft ML footprints + OpenStreetMap, ODbL) are
+  clipped to the Vicmap block, drawn on the map, and taken off so the
+  cards offer shares of the real yard with actual m². The lawn box now
+  starts in the biggest open part of the yard, and the map fits the whole
+  block. Neighbours' roof slivers over the boundary are ignored. Falls
+  back to block percentages when no footprint is found. Tested on real
+  blocks: Overture covered 82–100% of house blocks in ~1s; OpenStreetMap
+  via Overpass alone covered 69–100%, took 10–21s and failed once, so it
+  wasn't used. The latest Overture release is looked up at runtime (old
+  ones are deleted), with `overtureRelease` in the config as a fallback.
 - **Build step** (`npm run build`, zero dependencies): pages live in
   `src/`, shared header/footer/metadata are written once, and the root HTML
   is generated. `npm run check` and a GitHub Action catch broken links and

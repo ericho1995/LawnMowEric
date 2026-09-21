@@ -14,9 +14,15 @@ const EXTRA_SCRIPTS = {
   estimator: [
     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
     'https://cdnjs.cloudflare.com/ajax/libs/Turf.js/7.4.0/turf.min.js',
-    '{{root}}assets/js/estimator.js'
+    { module: '{{root}}assets/js/estimator.js' }
   ]
 };
+
+function scriptTag(entry, r) {
+  return typeof entry === 'string'
+    ? '<script src="' + r(entry) + '"></script>'
+    : '<script type="module" src="' + r(entry.module) + '"></script>';
+}
 
 const PLACEHOLDER_GA = 'G-XXXXXXXXXX';
 
@@ -121,6 +127,7 @@ function browserConfig(config) {
   return {
     gasWebhookUrl: isRealWebhook(config.gasWebhookUrl) ? config.gasWebhookUrl : '',
     mapboxToken: /^pk\./.test(config.mapboxToken || '') ? config.mapboxToken : '',
+    overtureRelease: config.overtureRelease,
     formEmail: config.formEmail,
     pricing: { bands: config.pricing.bands },
     booking: config.booking,
@@ -194,7 +201,7 @@ export function renderPage({ meta, bodyHtml, root, config, suburbs, partials, fa
   tail.push('<script src="' + root + 'assets/js/site.js"></script>');
   for (const s of scripts) {
     if (s === 'quote') tail.push('<script type="module" src="' + root + 'assets/js/quote.js"></script>');
-    else if (EXTRA_SCRIPTS[s]) tail.push(...EXTRA_SCRIPTS[s].map((src) => '<script src="' + r(src) + '"></script>'));
+    else if (EXTRA_SCRIPTS[s]) tail.push(...EXTRA_SCRIPTS[s].map((entry) => scriptTag(entry, r)));
     else throw new Error(source + ': unknown script "' + s + '"');
   }
 

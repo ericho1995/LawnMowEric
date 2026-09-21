@@ -658,6 +658,14 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 }
 .estimator .btn-ghost { background: var(--surface); color: var(--text); border-color: var(--line-strong); }
 
+#lawn-map .leaflet-control-attribution { font-size: 10px; line-height: 1.35; max-width: 100%; }
+.map-legend { list-style: none; padding: 0; margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.875rem; color: var(--text-muted); }
+.map-legend li { display: inline-flex; align-items: center; gap: 8px; }
+.swatch { width: 16px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+.swatch-block { border: 3px solid #1E9F35; background: rgba(30, 159, 53, 0.12); }
+.swatch-house { background: #5B6470; border: 1.5px solid #FFFFFF; box-shadow: 0 0 0 1px #5B6470; }
+.swatch-box { border: 2px dashed #FF6A1A; background: rgba(255, 106, 26, 0.22); }
+
 /* "How much of it is lawn?" cards */
 .size-pick-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
 @media (min-width: 760px) { .size-pick-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
