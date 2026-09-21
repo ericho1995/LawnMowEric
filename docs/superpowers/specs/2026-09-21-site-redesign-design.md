@@ -75,20 +75,28 @@ assets/
 
 ## Visual system
 
-- **Type:** Fraunces for display (warm, editorial, optical sizing) and
-  Manrope for body.
-- **Colour:** existing tokens refined: cream `#F7F5EA` ground, deep forest
-  `#1F3A27` for dark sections, brand green `#3E6B44`, gold `#C98A2B` used
-  sparingly for price and offer accents. Keep and refine the dark mode.
-- **Shape:** radii 6/12/20px; hairline borders over heavy shadows; one
-  elevation level for floating cards.
+- **Signature:** the logo's own mowing stripes, scaled up into the hero and
+  echoed once in the closing CTA. Nothing else competes with it.
+- **Type:** Archivo (variable width axis) set heavy and slightly expanded
+  for headings — signwriting on a ute, not an editorial serif — with
+  Manrope for body text. *Revised from Fraunces during the design pass:
+  cream ground + high-contrast serif is the most generic generated-site
+  look, and this brand's cream is fixed, so the type had to move instead.*
+- **Colour** (taken from the logo): Paddock `#1D3526` for dark sections,
+  Fairway `#3E6B44` for actions, Rough `#22392A` as the second stripe
+  colour, Cream `#F7F5EA` as the ground, Straw `#C98A2B` only for prices
+  and the offer. Keep and refine the dark mode.
+- **Shape:** radii 4/8/12px (sturdy, not bouncy); hairline rows and
+  dividers instead of card grids. Cards only for real objects: the price
+  "job sheet" and the quote form.
 - **Rhythm:** 8px spacing scale, a fluid type scale via `clamp()`, 1200px
   content width, 16px minimum mobile gutter, no horizontal scroll.
-- **Section variety:** split hero, a price strip, services as a feature row
-  plus add-on list, numbered process, promise grid, suburb index, reviews
-  slot, FAQ, closing CTA. No emoji in headings.
-- **Motion:** a light reveal-on-scroll, disabled under
-  `prefers-reduced-motion`.
+  Left-aligned throughout.
+- **No template chrome:** no tracked-out eyebrow labels over headings, no
+  emoji in headings, no "→" appended to links.
+- **Motion:** one orchestrated moment — a mower pass wipes the hero on load
+  to reveal the stripes. No scroll-reveal on every section. Nothing moves
+  under `prefers-reduced-motion`.
 
 ## Features
 
