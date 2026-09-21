@@ -62,6 +62,13 @@ function checkLive(file, html) {
   if (html.includes('G-XXXXXXXXXX')) fail(file, 'GA placeholder id emitted');
   if (/-prototype\.html/.test(html)) fail(file, 'links to a deleted prototype page');
 
+  // Absolute links to our own domain (og:image, canonical, JSON-LD images)
+  // must point at files that exist, or share previews break after deploy.
+  for (const m of html.matchAll(/https:\/\/thelawncare\.com\.au\/([^"'\s<>]*)/g)) {
+    const path = m[1].split(/[?#]/)[0] || 'index.html';
+    if (!existsSync(join(ROOT, path))) fail(file, 'absolute link to a missing file: ' + m[0]);
+  }
+
   for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
     try { JSON.parse(m[1]); } catch (err) { fail(file, 'invalid JSON-LD: ' + err.message); }
   }

@@ -12,6 +12,18 @@ publicly, work through this list. Grouped by who needs to act.
       one quote request yourself on thelawncare.com.au, click "Activate
       Form" in the email FormSubmit sends to `ericho995@gmail.com`, then
       submit a second test and confirm it lands in your inbox.
+- [ ] **Fix `https://www.` (browser security warning today).** The
+      HTTPS certificate only covers `thelawncare.com.au`, so anyone who
+      types `https://www.thelawncare.com.au` sees "your connection is not
+      private" (checked 21 Sept 2026: `SEC_E_WRONG_PRINCIPAL`). GitHub only
+      adds `www` to the certificate when `www` is a CNAME to your
+      github.io address. In GoDaddy → DNS: set the `www` record to type
+      **CNAME**, value **`ericho1995.github.io`**. Then in the GitHub repo
+      → Settings → Pages, remove the custom domain, save, re-add
+      `thelawncare.com.au`, save, and wait (up to 24h) for the certificate.
+- [ ] **Enforce HTTPS** (GitHub repo → Settings → Pages → tick "Enforce
+      HTTPS"). Currently `http://` pages load without redirecting, so a
+      quote could be sent unencrypted.
 - [ ] **Check the Pages deploy after merging.** In the GitHub repo's
       Actions tab, "pages-build-deployment" should go green, and "Site
       checks" too. Then confirm `thelawncare.com.au/docs/requirements.html`

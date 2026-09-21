@@ -61,6 +61,11 @@ Full rebuild on branch `site-redesign`. Spec:
   lawns); stock photos are labelled as stock.
 - GA4 is set once in `src/site.config.mjs` and left off every page until a
   real ID is there; tracks `quote_start`, `generate_lead`, `cta_click`.
+- **Link previews and icons:** a 1200×630 share image
+  (`assets/og-image.jpg`, 77KB) replaces the SVG logo as `og:image`, which
+  Facebook, WhatsApp and iMessage don't display; large-image Twitter card;
+  iPhone home-screen icon and a PNG favicon fallback. `npm run check` now
+  also fails if any absolute link to the domain points at a missing file.
 
 ### Added — critical-review follow-up: SEO, real admin backend, spam protection, phone number
 - **`robots.txt` + `sitemap.xml`** at the repo root — the site had zero
