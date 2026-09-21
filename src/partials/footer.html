@@ -1,0 +1,33 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="{{root}}index.html">
+          <img class="brand-mark" src="{{root}}assets/logo-icon.svg" alt="" width="36" height="36">
+          <span class="brand-name">The Lawn Care</span>
+        </a>
+        <p>Lawn mowing across Melbourne's inner and northern suburbs, by one operator who does every job in person.</p>
+        <a class="btn btn-primary" href="{{root}}quote.html" data-track="footer_quote">Get a free quote</a>
+      </div>
+      <div class="footer-col">
+        <p class="footer-heading">The Lawn Care</p>
+        <ul>
+          <li><a href="{{root}}services.html">Services &amp; prices</a></li>
+          <li><a href="{{root}}how-it-works.html">How it works</a></li>
+          <li><a href="{{root}}work.html">Our work</a></li>
+          <li><a href="{{root}}reviews.html">Reviews</a></li>
+          <li><a href="{{root}}articles.html">Lawn tips</a></li>
+          <li><a href="{{root}}quote.html">Get a quote</a></li>
+        </ul>
+      </div>
+      <div class="footer-col footer-suburbs">
+        <p class="footer-heading"><a href="{{root}}service-area.html">Where we mow</a></p>
+        {{suburb-links}}
+      </div>
+    </div>
+    <div class="footer-fine">
+      <p>&copy; 2026 {{config.business.name}}. ABN {{config.business.abn}}. Melbourne, Victoria.</p>
+      <p><a href="{{root}}privacy.html">Privacy policy</a> <a href="{{root}}admin.html" rel="nofollow">Admin</a></p>
+    </div>
+  </div>
+</footer>

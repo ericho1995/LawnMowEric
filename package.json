@@ -1,0 +1,15 @@
+{
+  "name": "thelawncare-site",
+  "private": true,
+  "description": "The Lawn Care static site. Zero dependencies: edit src/, run `npm run build`, commit the output.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "verify": "npm test && npm run build && npm run check",
+    "serve": "node scripts/serve.mjs"
+  }
+}

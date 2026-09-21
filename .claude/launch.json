@@ -3,14 +3,22 @@
   "configurations": [
     {
       "name": "mowmate-static",
-      "runtimeExecutable": "powershell.exe",
-      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/serve.ps1"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/serve.mjs"
+      ],
       "port": 8791
     },
     {
       "name": "mathmatrix-dev",
       "runtimeExecutable": "powershell.exe",
-      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\eric_\\Desktop\\mathmatrix\\scripts\\dev.ps1"],
+      "runtimeArgs": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "C:\\Users\\eric_\\Desktop\\mathmatrix\\scripts\\dev.ps1"
+      ],
       "port": 3000,
       "autoPort": true
     }

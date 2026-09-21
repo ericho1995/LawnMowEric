@@ -1,0 +1,26 @@
+name: Site checks
+
+# Runs on every push and pull request. Fails if tests or site checks fail,
+# or if someone edited src/ (or a generated page directly) without running
+# `npm run build` and committing the result.
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm test
+      - run: npm run build
+      - run: npm run check
+      - name: Generated pages are up to date
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::Generated HTML is out of date. Edit files in src/, run 'npm run build', and commit the result."
+            exit 1
+          fi

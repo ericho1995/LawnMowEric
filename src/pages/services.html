@@ -1,0 +1,102 @@
+---
+title: Lawn mowing services and prices — The Lawn Care
+description: Melbourne lawn mowing prices: $55–70 for small lawns, $75–95 medium, $105–140 large, or $85 a month. Edging, hedging and green waste add-ons, all confirmed before you book.
+nav: services
+breadcrumb: Services and prices
+schema: services
+---
+<section class="page-hero" data-hero>
+  <div class="container">
+    <h1>Services and prices</h1>
+    <p class="lede">Every job starts with a standard mow, priced by lawn size. Add what your lawn needs, pay per visit or by the month, and see the price before you book.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{root}}quote.html" data-track="services_hero_quote">Get a free quote</a>
+      <a class="btn btn-outline" href="#prices">See prices</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <h2>The standard mow</h2>
+      <p class="section-lead">Included in every quote, and exactly what the price bands pay for.</p>
+      <ul class="tick-list">
+        <li>Front and back lawns cut clean and even</li>
+        <li>Clippings mulched, or caught and put in your green bin — your call</li>
+        <li>Paths and driveway blown clear</li>
+        <li>Trimming around trees, beds and obstacles</li>
+        <li>A message when we're on the way and when we're done, with before-and-after photos</li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="list-title">Optional add-ons</h2>
+      <p class="section-lead">Not included in the standard mow. Tick them on the quote form and we'll confirm the exact figure before you book.</p>
+      <ul class="addon-list">
+        <li>
+          <span class="addon-name">Edging and whipper snip</span>
+          <span class="addon-price">+{{config.pricing.addonRange}}</span>
+          <span class="addon-desc">Crisp edges along paths, driveways, fences and garden beds where the mower can't reach.</span>
+        </li>
+        <li>
+          <span class="addon-name">Hedge trimming <span class="tag">Intro rate</span></span>
+          <span class="addon-price">Ask</span>
+          <span class="addon-desc">Light shaping, not removal or stump work. Discounted while we build up hedging experience, priced per job by size and how overgrown it is.</span>
+        </li>
+        <li>
+          <span class="addon-name">Green waste removal</span>
+          <span class="addon-price">+{{config.pricing.addonRange}}</span>
+          <span class="addon-desc">Only if you don't have your own green waste bin. Otherwise the clippings go in yours at no extra charge.</span>
+        </li>
+      </ul>
+      <p class="list-foot muted">Add-on prices are typical Melbourne rates. The exact figure is confirmed with your mow price.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint" id="prices">
+  <div class="container">
+    <div class="section-head">
+      <h2>Two ways to pay</h2>
+      <p>A one-off mow priced by lawn size, or a flat monthly subscription. Both cover a standard mow; add-ons and hard-to-reach sites are quoted on top.</p>
+    </div>
+    <div class="pricing-options">
+      <article class="job-sheet">
+        <h3 class="job-sheet-title">Pay per visit</h3>
+        <p class="job-sheet-note">Weekly, fortnightly, monthly or one-off. Size your lawn on the quote page map for an instant figure.</p>
+        {{price-table}}
+        <p class="job-sheet-foot">Lawns not mowed in four weeks or more attract an overgrown surcharge, confirmed when we quote.</p>
+        <a class="btn btn-primary btn-block" href="{{root}}quote.html" data-track="services_per_visit">Measure my lawn for a price</a>
+      </article>
+      <article class="job-sheet">
+        <h3 class="job-sheet-title">Monthly subscription</h3>
+        <p class="plan-price">${{config.pricing.subscriptionMonthly}} <span>a month</span></p>
+        <ul class="tick-list">
+          <li>One standard mow a month, billed monthly</li>
+          <li>For small to medium lawns, up to about 400m²</li>
+          <li>The same person, on roughly the same day each month</li>
+          <li>Messages and before-and-after photos every visit</li>
+          <li>No lock-in contract — cancel before the next visit</li>
+        </ul>
+        <a class="btn btn-outline btn-block" href="{{root}}quote.html?plan=subscription" data-track="services_subscription">Request the subscription</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="section-head">
+      <h2>Common questions</h2>
+    </div>
+    {{faq:services}}
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Pick a mow, get a price</h2>
+    <p>A standard mow plus whatever your lawn needs, confirmed before you book.</p>
+    <a class="btn btn-primary" href="{{root}}quote.html" data-track="services_cta">Get a free quote</a>
+  </div>
+</section>
