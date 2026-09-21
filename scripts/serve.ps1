@@ -12,7 +12,13 @@ $mime = @{
   ".html" = "text/html; charset=utf-8"; ".htm" = "text/html; charset=utf-8"; ".css" = "text/css; charset=utf-8"; ".js" = "application/javascript; charset=utf-8"
   ".json" = "application/json; charset=utf-8"; ".png" = "image/png"; ".jpg" = "image/jpeg"; ".svg" = "image/svg+xml"
   ".ico" = "image/x-icon"; ".md" = "text/plain; charset=utf-8"
+  ".mjs" = "text/javascript; charset=utf-8"; ".txt" = "text/plain; charset=utf-8"; ".xml" = "application/xml; charset=utf-8"; ".webp" = "image/webp"
 }
+
+# Prefer `npm run serve` (scripts/serve.mjs): it handles connections in
+# parallel. This fallback serves one at a time, so it must never wait
+# forever on a socket - browsers open spare "preconnect" sockets that send
+# nothing, and without a timeout ReadLine() would block every later request.
 
 $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Any, $Port)
 $listener.Start()
@@ -27,6 +33,7 @@ foreach ($ip in $lanIps) { Write-Host "  http://${ip}:${Port}/  (same Wi-Fi/netw
 
 while ($true) {
   $client = $listener.AcceptTcpClient()
+  $client.ReceiveTimeout = 1500
   try {
     $stream = $client.GetStream()
     $reader = New-Object System.IO.StreamReader($stream)

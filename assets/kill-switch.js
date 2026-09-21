@@ -5,7 +5,11 @@
 // admin.html, so leads already in the pipeline stay manageable during an
 // outage.
 (function () {
-  fetch('status.txt', { cache: 'no-store' })
+  // Resolve status.txt from this script's own URL (assets/kill-switch.js ->
+  // ../status.txt), so it works from pages in subfolders like lawn-mowing/.
+  var script = document.currentScript;
+  var statusUrl = script ? new URL('../status.txt', script.src).href : 'status.txt';
+  fetch(statusUrl, { cache: 'no-store' })
     .then(function (res) { return res.ok ? res.text() : ''; })
     .then(function (text) {
       const lines = text.split('\n');

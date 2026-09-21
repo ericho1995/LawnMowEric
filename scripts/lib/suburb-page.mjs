@@ -38,7 +38,7 @@ export function renderSuburb(suburb, all, config) {
     <h1>Lawn mowing in ${name}</h1>
     <p class="lede">${escapeHtml(suburb.intro)}</p>
     <div class="actions">
-      <a class="btn btn-primary" href="${quoteHref}" data-track="suburb_quote">Get a free quote</a>
+      <a class="btn btn-light" href="${quoteHref}" data-track="suburb_quote">Get a free quote</a>
       <a class="btn btn-outline-light" href="#prices">See prices</a>
     </div>
     <p class="hero-meta">${name} VIC ${escapeHtml(suburb.postcode)}, ${escapeHtml(suburb.council)}</p>

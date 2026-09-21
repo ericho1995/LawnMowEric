@@ -44,14 +44,21 @@ for (const file of files) {
     continue;
   }
   checked++;
+  if (html.includes('{{')) fail(file, 'unrendered {{ token');
 
+  // Commented-out markup (like the review and before/after templates) isn't
+  // live, so structural and link checks only look at the rest.
+  const live = html.replace(/<!--[\s\S]*?-->/g, '');
+  checkLive(file, live);
+}
+
+function checkLive(file, html) {
   const noindex = /<meta name="robots" content="[^"]*noindex/.test(html);
   const h1s = (html.match(/<h1[\s>]/g) || []).length;
   if (h1s !== 1) fail(file, 'expected exactly one <h1>, found ' + h1s);
   if (!/<title>[^<]+<\/title>/.test(html)) fail(file, 'missing <title>');
   if (!/<meta name="description" content="[^"]+">/.test(html)) fail(file, 'missing meta description');
   if (!noindex && !/<link rel="canonical" href="https:\/\/[^"]+">/.test(html)) fail(file, 'missing canonical URL');
-  if (html.includes('{{')) fail(file, 'unrendered {{ token');
   if (html.includes('G-XXXXXXXXXX')) fail(file, 'GA placeholder id emitted');
   if (/-prototype\.html/.test(html)) fail(file, 'links to a deleted prototype page');
 
@@ -75,7 +82,8 @@ for (const file of files) {
       if (path.endsWith('/')) target = join(target, 'index.html');
       if (!existsSync(target)) { fail(file, 'broken link: ' + url); continue; }
     }
-    if (hash && target.endsWith('.html') && !idsIn(readPage(target)).has(hash)) {
+    const targetHtml = target === file ? html : readPage(target);
+    if (hash && target.endsWith('.html') && !idsIn(targetHtml).has(hash)) {
       fail(file, 'broken anchor: ' + url);
     }
   }

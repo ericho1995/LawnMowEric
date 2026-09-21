@@ -1,0 +1,155 @@
+---
+title: The Lawn Care — lawn mowing in Melbourne, priced before you book
+description: Lawn mowing across Melbourne's inner and northern suburbs. From $55 a mow, priced by lawn size and confirmed before you book. The same person every visit, and a reply within one business day.
+schema: localbusiness
+---
+<section class="hero-lawn" data-hero>
+  <div class="container hero-grid">
+    <div>
+      <h1>Your lawn, mowed by someone who actually shows up.</h1>
+      <p class="lede">See what your mow costs before you ask, request a day that suits you, and get the same person every visit. No phone tag, no app, no lock-in.</p>
+      <div class="actions">
+        <a class="btn btn-light" href="{{root}}quote.html" data-track="hero_quote">Get a free quote</a>
+        <a class="btn btn-outline-light" href="{{root}}how-it-works.html">How it works</a>
+      </div>
+      <ul class="hero-facts">
+        <li>Reply within one business day</li>
+        <li>Photos after every visit</li>
+        <li>Cancel anytime</li>
+      </ul>
+    </div>
+    <aside class="job-sheet" aria-labelledby="home-prices">
+      <h2 class="job-sheet-title" id="home-prices">What a standard mow costs</h2>
+      <p class="job-sheet-note">Priced by lawn size, front and back. Confirmed before you book.</p>
+      {{price-table}}
+      <p class="job-sheet-foot">Or ${{config.pricing.subscriptionMonthly}} a month for one visit a month, with no lock-in.</p>
+      <a class="btn btn-primary btn-block" href="{{root}}quote.html" data-track="hero_measure">Measure my lawn for a price</a>
+    </aside>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <h2>Every job starts with a standard mow</h2>
+      <p class="section-lead">It's exactly what the prices above pay for, with nothing hidden in it.</p>
+      <ul class="tick-list">
+        <li>Front and back lawns cut clean and even</li>
+        <li>Clippings mulched, or caught and put in your green bin</li>
+        <li>Paths and driveway blown clear</li>
+        <li>Trimming around trees, beds and obstacles</li>
+        <li>Before-and-after photos sent to you</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="list-title">Add what your lawn needs</h3>
+      <ul class="addon-list">
+        <li>
+          <span class="addon-name">Edging and whipper snip</span>
+          <span class="addon-price">+{{config.pricing.addonRange}}</span>
+          <span class="addon-desc">Crisp edges along paths, fences and garden beds where the mower can't reach.</span>
+        </li>
+        <li>
+          <span class="addon-name">Hedge trimming <span class="tag">Intro rate</span></span>
+          <span class="addon-price">Ask</span>
+          <span class="addon-desc">Light shaping, discounted while we build up hedging experience.</span>
+        </li>
+        <li>
+          <span class="addon-name">Green waste removal</span>
+          <span class="addon-price">+{{config.pricing.addonRange}}</span>
+          <span class="addon-desc">Only if you don't have a green bin. Otherwise the clippings go in yours, free.</span>
+        </li>
+      </ul>
+      <p class="list-foot"><a href="{{root}}services.html">Services and prices in full</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <h2>From quote to cut lawn</h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <h3>Tell us about your lawn</h3>
+        <p>Suburb, size and how often. Draw it on the map for an instant price range. It takes about a minute.</p>
+      </li>
+      <li>
+        <h3>Request a day</h3>
+        <p>Pick a day and a morning or afternoon. We confirm the price and time within one business day.</p>
+      </li>
+      <li>
+        <h3>We mow, you get photos</h3>
+        <p>A message when we're on the way, another when we're done, with before-and-after photos.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-head">
+      <h2>What you can count on</h2>
+    </div>
+    <ul class="promise-grid">
+      <li>
+        <h3>You know who's coming</h3>
+        <p>Right now every job is done in person by the same operator, not a rotating subcontractor.</p>
+      </li>
+      <li>
+        <h3>The price comes first</h3>
+        <p>Your quote is confirmed before anything is booked. No surprise lines on the invoice.</p>
+      </li>
+      <li>
+        <h3>Updates on the day</h3>
+        <p>You hear from us when we're on the way and when we're done, with photos of the finish.</p>
+      </li>
+      <li>
+        <h3>Fixed if it's not right</h3>
+        <p>Tell us within 24 hours of the mow and we'll come back and make it right.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container suburb-index">
+    <div class="section-head">
+      <h2>Where we mow</h2>
+      <p>Booking now across Melbourne's inner and northern suburbs. Choose yours for local details and likely prices.</p>
+    </div>
+    {{suburb-links}}
+    <p class="list-foot muted">Not listed? Put your suburb on the quote form and we'll tell you straight whether we can get there.</p>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <div class="section-head">
+      <h2>Reviews</h2>
+    </div>
+    <div class="empty-slot">
+      <h3>No reviews yet, and we won't make any up</h3>
+      <p>The Lawn Care is new. As customers have their lawns mowed, their reviews will appear here with their first name and suburb.</p>
+      <p><a href="{{root}}reviews.html">How we handle reviews</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="section-head">
+      <h2>Common questions</h2>
+    </div>
+    {{faq:general}}
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Get your lawn on the schedule</h2>
+    <p>Tell us about your lawn and request a day. You'll have a price and a time from us within one business day.</p>
+    <a class="btn btn-light" href="{{root}}quote.html" data-track="home_cta">Get a free quote</a>
+  </div>
+</section>

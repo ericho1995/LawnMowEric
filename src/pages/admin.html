@@ -1,24 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<meta charset="UTF-8">
-<title>Job Queue — The Lawn Care (design prototype)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
-<link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
-<link rel="stylesheet" href="assets/styles-prototype.css">
-
-<div style="background:#1A1200;color:#EFD9A6;font-size:0.8rem;font-weight:700;text-align:center;padding:8px 16px;">
-  🎨 DESIGN PROTOTYPE — not the live site, not indexed. Compare against <a href="admin.html" style="color:#fff;text-decoration:underline;">admin.html</a>.
-</div>
-
+---
+title: Job queue — The Lawn Care
+description: Private job queue for The Lawn Care.
+robots: noindex, nofollow
+layout: bare
+styles: admin
+---
 <a class="skip-link" href="#main">Skip to content</a>
 
 <div class="admin-shell" id="main">
   <div class="admin-head">
     <div>
-      <a class="back-link" href="index-prototype.html">← Back to site</a>
+      <a class="back-link" href="index.html">← Back to site</a>
       <h1>Job queue</h1>
     </div>
   </div>
@@ -42,10 +34,10 @@
   const STATUS_VALUES = ['New', 'Contacted', 'Scheduled', 'Completed'];
   const POLL_MS = 20000;
 
-  // Paste the same Apps Script Web App URL used in quote.html — see
-  // docs/apps-script/Code.gs for the one-time setup. Left as a placeholder,
-  // the admin view explains that clearly instead of silently showing nothing.
-  const GAS_WEBHOOK_URL = 'PASTE_YOUR_DEPLOYED_APPS_SCRIPT_URL_HERE';
+  // The Apps Script Web App URL comes from gasWebhookUrl in
+  // src/site.config.mjs (see docs/apps-script/Code.gs for setup). While that's
+  // the placeholder, the admin view says so instead of silently showing nothing.
+  const GAS_WEBHOOK_URL = (window.TLC_CONFIG && window.TLC_CONFIG.gasWebhookUrl) || '';
 
   const gate = document.getElementById('admin-gate');
   const content = document.getElementById('admin-content');
@@ -55,13 +47,23 @@
   const listEl = document.getElementById('admin-list');
 
   function backendConfigured() {
-    return GAS_WEBHOOK_URL && GAS_WEBHOOK_URL.indexOf('PASTE_') !== 0;
+    return !!GAS_WEBHOOK_URL;
   }
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+
+  // Requested booking slot from the quote form picker, falling back to the
+  // older free-text 'day' field for requests made before the picker existed.
+  function requestedSlot(d) {
+    if (!d.requestedDate) return d.day || 'Flexible';
+    const date = new Date(String(d.requestedDate).slice(0, 10) + 'T00:00:00Z');
+    const label = date.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
+    const windowLabel = { am: 'morning', pm: 'afternoon' }[d.requestedWindow] || d.requestedWindow || '';
+    return 'Requested ' + label + (windowLabel ? ', ' + windowLabel : '');
   }
 
   function renderList(items) {
@@ -84,7 +86,7 @@
             <span>${escapeHtml(d.size || '')}</span>
             ${d.lastMowed ? `<span>Last mowed: ${escapeHtml(d.lastMowed)}</span>` : ''}
             <span>${escapeHtml(d.frequency || '')}</span>
-            <span>${escapeHtml(d.day || 'Flexible')}</span>
+            <span>${escapeHtml(requestedSlot(d))}</span>
           </div>
           ${d.areaM2 ? `<div class="lead-notes">Mapped lawn area: ${escapeHtml(String(Math.round(Number(d.areaM2))))} m² · Est. ${d.estimateLow ? `$${escapeHtml(String(d.estimateLow))}–$${escapeHtml(String(d.estimateHigh))}` : 'quote on request'} per standard mow</div>` : ''}
           ${(d.addonEdging || d.addonHedge) ? `<div class="lead-notes">Add-ons: ${[d.addonEdging, d.addonHedge].filter(Boolean).map(escapeHtml).join(', ')}</div>` : ''}
@@ -93,7 +95,7 @@
           ${d.notes ? `<div class="lead-notes">"${escapeHtml(d.notes)}"</div>` : ''}
         </div>
         <div>
-          <label for="status-${safeId}" style="font-size:0.8rem;font-weight:700;color:var(--text-muted);">Status</label>
+          <label for="status-${safeId}" class="lead-label">Status</label>
           <select id="status-${safeId}" class="status-select status-${safeStatus}" data-id="${safeId}">
             ${STATUS_VALUES.map(s => `<option value="${s}" ${safeStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
           </select>
@@ -139,7 +141,7 @@
   function warnInline(afterEl, text) {
     const warn = document.createElement('div');
     warn.textContent = text;
-    warn.style.cssText = 'color:var(--accent);font-size:0.78rem;margin-top:6px;';
+    warn.style.cssText = 'color:var(--error);font-size:0.78rem;margin-top:6px;';
     afterEl.after(warn);
     setTimeout(function () { warn.remove(); }, 4000);
   }
@@ -171,7 +173,7 @@
     if (!backendConfigured()) {
       gate.style.display = 'none';
       content.style.display = 'block';
-      listEl.innerHTML = '<div class="admin-empty">Admin backend isn\'t connected yet — deploy docs/apps-script/Code.gs as a Google Apps Script Web App and paste the URL into GAS_WEBHOOK_URL near the top of this page\'s script (see the pre-live checklist). Leads are still arriving by email via FormSubmit in the meantime.</div>';
+      listEl.innerHTML = '<div class="admin-empty">Admin backend isn\'t connected yet — deploy docs/apps-script/Code.gs as a Google Apps Script Web App and set gasWebhookUrl in src/site.config.mjs, then rebuild (see the pre-live checklist). Leads are still arriving by email via FormSubmit in the meantime.</div>';
       return;
     }
     gateInput.disabled = true;
