@@ -26,16 +26,28 @@
 //      Execute as: Me
 //      Who has access: Anyone
 //    Click Deploy, authorize when prompted, copy the Web App URL.
-// 5. Paste that URL into GAS_WEBHOOK_URL near the top of the <script> in both
-//    quote.html and admin.html (replace the PASTE_YOUR_DEPLOYED... placeholder).
+// 5. Paste that URL into gasWebhookUrl in src/site.config.mjs (replace the
+//    PASTE_YOUR_DEPLOYED... placeholder), run `npm run build`, and commit.
+//    quote.html and admin.html both pick it up from there.
 // 6. Open admin.html and log in with the passphrase you set in step 3.
+//
+// Optional Script Property: SLOT_CAPACITY (default 3) — how many open
+// requests a morning or afternoon can hold before the quote page shows it
+// as fully booked.
+//
+// Updating an existing deployment: paste the new code, then Deploy ->
+// Manage deployments -> edit (pencil) -> Version: New version -> Deploy.
+// Keeping the same deployment keeps the same URL.
 
 const SHEET_NAME = 'Quotes';
+const TIMEZONE = 'Australia/Melbourne';
+const OWNER_EMAIL = 'ericho995@gmail.com';
 const STATUS_VALUES = ['New', 'Contacted', 'Scheduled', 'Completed'];
 const FIELDS = [
   'id', 'createdAt', 'name', 'phone', 'email', 'suburb', 'size', 'lastMowed',
   'frequency', 'day', 'addonEdging', 'addonHedge', 'noGreenBin', 'extras',
-  'notes', 'areaM2', 'estimateLow', 'estimateHigh', 'status', 'depositPaid'
+  'notes', 'areaM2', 'estimateLow', 'estimateHigh', 'status', 'depositPaid',
+  'requestedDate', 'requestedWindow', 'flexible'
 ];
 
 function getSheet_() {
@@ -45,7 +57,80 @@ function getSheet_() {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(FIELDS);
   }
+  ensureHeader_(sheet);
   return sheet;
+}
+
+// Sheets created by an older version of this script are missing newer
+// columns. Append any missing ones to the header row so rows line up.
+function ensureHeader_(sheet) {
+  const header = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+  const missing = FIELDS.filter(function (key) { return header.indexOf(key) === -1; });
+  if (missing.length) sheet.getRange(1, header.length + 1, 1, missing.length).setValues([missing]);
+}
+
+function headerOf_(sheet) {
+  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+}
+
+// Every value a customer typed is stored as plain text. The leading
+// apostrophe stops Sheets from (a) running input like "=IMPORTXML(...)" as
+// a formula, (b) turning 0400123456 into the number 400123456, and
+// (c) turning "2026-09-26" into a date. It isn't part of the cell's value.
+function asText_(value) {
+  if (value === undefined || value === null || value === '') return '';
+  return "'" + String(value).slice(0, 2000);
+}
+
+// Dates may come back as Date objects from rows Sheets already converted.
+function isoDate_(value) {
+  if (value instanceof Date) return Utilities.formatDate(value, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+  return String(value || '').slice(0, 10);
+}
+
+function slotCapacity_() {
+  const n = Number(PropertiesService.getScriptProperties().getProperty('SLOT_CAPACITY'));
+  return n > 0 ? n : 3;
+}
+
+function windowLabel_(id) {
+  return { am: 'morning', pm: 'afternoon' }[id] || id || '';
+}
+
+// Plain-text confirmation to the customer, sent from the script owner's
+// account. Failure is ignored: the request is saved and Eric is notified
+// either way.
+function sendCustomerConfirmation_(values, slot) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email || '')) return;
+  const firstName = String(values.name || '').trim().split(/\s+/)[0] || 'there';
+  const body = [
+    'Hi ' + firstName + ',',
+    '',
+    "Thanks for your lawn mowing quote request. Here's what we received:",
+    '',
+    'Suburb: ' + (values.suburb || '-'),
+    'Lawn size: ' + (values.size || '-'),
+    'How often: ' + (values.frequency || '-'),
+    'Requested time: ' + slot,
+    '',
+    "We'll reply within one business day with your price and a confirmed time, or the nearest free one. " +
+      'Nothing is booked until you accept the quote and pay the deposit ($20 or 20% of the quote, whichever is higher).',
+    '',
+    'Need to change something? Just reply to this email.',
+    '',
+    'The Lawn Care',
+    'https://thelawncare.com.au/'
+  ].join('\n');
+  try {
+    MailApp.sendEmail({
+      to: values.email,
+      subject: 'We have your lawn mowing quote request',
+      body: body,
+      name: 'The Lawn Care'
+    });
+  } catch (err) {
+    // Ignore — see above.
+  }
 }
 
 function checkSecret_(token) {
@@ -58,7 +143,31 @@ function jsonOut_(obj) {
 }
 
 // GET ?secret=... -> list every quote request, newest first.
+// GET ?action=availability -> public. Open requests per day+window from
+// today on, so the quote page can grey out full slots. Counts only — no
+// names, addresses or anything else about who asked.
+function availability_() {
+  const sheet = getSheet_();
+  const rows = sheet.getDataRange().getValues();
+  const header = rows.shift();
+  const dateCol = header.indexOf('requestedDate');
+  const windowCol = header.indexOf('requestedWindow');
+  const statusCol = header.indexOf('status');
+  const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+  const counts = {};
+  rows.forEach(function (row) {
+    const date = isoDate_(row[dateCol]);
+    const win = String(row[windowCol] || '');
+    if (!date || !win || date < today || row[statusCol] === 'Completed') return;
+    const key = date + '|' + win;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return jsonOut_({ ok: true, counts: counts, capacity: slotCapacity_() });
+}
+
 function doGet(e) {
+  if (e.parameter && e.parameter.action === 'availability') return availability_();
+
   const secret = (e.parameter && e.parameter.secret) || '';
   if (!checkSecret_(secret)) return jsonOut_({ ok: false, error: 'unauthorized' });
 
@@ -86,25 +195,40 @@ function doPost(e) {
   const action = body.action || 'submitQuote';
 
   if (action === 'submitQuote') {
+    // Honeypot: the quote page hides this field from people. Anything that
+    // fills it in is a bot posting directly — answer ok, store nothing.
+    if (body._honey) return jsonOut_({ ok: true });
+
     const sheet = getSheet_();
     const id = Utilities.getUuid();
-    const row = FIELDS.map(function (key) {
-      if (key === 'id') return id;
-      if (key === 'createdAt') return new Date().toISOString();
-      if (key === 'status') return 'New';
-      if (key === 'depositPaid') return false;
-      return body[key] || '';
+    const values = {};
+    const row = headerOf_(sheet).map(function (key) {
+      let value;
+      if (key === 'id') value = id;
+      else if (key === 'createdAt') value = new Date().toISOString();
+      else if (key === 'status') value = 'New';
+      else if (key === 'depositPaid') value = false;
+      else if (FIELDS.indexOf(key) !== -1) {
+        values[key] = body[key] ? String(body[key]) : '';
+        return asText_(body[key]);
+      } else value = '';
+      values[key] = value;
+      return value;
     });
     sheet.appendRow(row);
+
+    const slot = values.flexible ? 'Flexible' : (values.day || 'Not given');
     try {
       MailApp.sendEmail({
-        to: 'ericho995@gmail.com',
-        subject: 'New quote request - The Lawn Care',
-        body: FIELDS.map(function (key, i) { return key + ': ' + row[i]; }).join('\n')
+        to: OWNER_EMAIL,
+        replyTo: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email) ? values.email : OWNER_EMAIL,
+        subject: 'New quote request — ' + (values.suburb || 'no suburb') + ' — ' + slot,
+        body: FIELDS.map(function (key) { return key + ': ' + (values[key] === undefined ? '' : values[key]); }).join('\n')
       });
     } catch (err) {
-      // Row is already saved in the sheet even if the email notification fails.
+      // The row is already saved even if the notification email fails.
     }
+    sendCustomerConfirmation_(values, slot);
     return jsonOut_({ ok: true, id: id });
   }
 
