@@ -5,13 +5,21 @@ publicly, work through this list. Grouped by who needs to act.
 
 ## Launching the 2026-09-21 redesign (branch `site-redesign`) — do these first
 
-- [ ] **Activate FormSubmit — without this, no quote reaches you.** The
-      quote form now checks FormSubmit's real answer, so until the form is
-      activated customers see "didn't go through — send by email instead"
-      rather than a fake "received". After the redesign is live: submit
-      one quote request yourself on thelawncare.com.au, click "Activate
-      Form" in the email FormSubmit sends to `ericho995@gmail.com`, then
-      submit a second test and confirm it lands in your inbox.
+- [ ] **Get a Web3Forms access key (1 minute, works from a phone).** On
+      22 Sept 2026 FormSubmit's servers were down (Cloudflare 522 /
+      timeouts), so every quote fell back to "send by email instead". The
+      form now tries several relays in turn; Web3Forms is the second,
+      independent one. Go to web3forms.com, enter `ericho995@gmail.com`,
+      and paste the access key it emails you into `web3formsAccessKey` in
+      `src/site.config.mjs` (or send it to Claude to add), then build and
+      push. Then send yourself one test quote.
+- [x] FormSubmit activated — done 8 Sept 2026 (activation email clicked; a
+      test submission arrived the same minute). An earlier version of
+      this list wrongly said it was still pending.
+- [ ] **Longer term: deploy the Apps Script backend** (below) — it runs
+      on your own Google account, so it doesn't depend on a free relay,
+      and it gives you the lead spreadsheet, admin page and live booking
+      availability. Needs a computer, about 10 minutes.
 - [ ] **Fix `https://www.` (browser security warning today).** The
       HTTPS certificate only covers `thelawncare.com.au`, so anyone who
       types `https://www.thelawncare.com.au` sees "your connection is not
@@ -173,9 +181,8 @@ are in `CHANGELOG.md` [Unreleased].
       resized browser — the trace-your-lawn interaction is touch-driven
       and is exactly the kind of thing that looks fine in devtools and
       breaks on-device.
-- [ ] **Confirm the FormSubmit "confirm this form" email** has been
-      clicked once (check `ericho995@gmail.com`) — otherwise every real
-      submission via that fallback path is silently swallowed.
+- [x] **Confirm the FormSubmit "confirm this form" email** has been
+      clicked once — done 8 Sept 2026 (verified in the inbox 22 Sept).
 - [x] Decided: `0402 764 211` removed from every page (nav, hero, footer,
       privacy page, schema.org data) — 2026-09-10. The quote form is now the
       only public contact path; phone re-added only if/when there's a

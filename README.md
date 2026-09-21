@@ -57,11 +57,13 @@ match the source, so a forgotten build gets caught.
 `_config.yml` keeps `src/`, `scripts/`, `tests/` and `docs/` off the
 public site — GitHub Pages only serves the built pages and `assets/`.
 
-**Quote requests** go to the Apps Script backend when `gasWebhookUrl` is
-set in `src/site.config.mjs`, otherwise to FormSubmit.co, which emails them
-to Eric. If both fail (or FormSubmit hasn't been activated yet), the
-customer gets a pre-filled email draft instead of a false confirmation.
-See `docs/pre-live-checklist.md` for the one-time FormSubmit activation.
+**Quote requests** try each configured route in turn (`assets/js/relays.mjs`):
+the Apps Script backend (`gasWebhookUrl`), then Web3Forms
+(`web3formsAccessKey`), then FormSubmit.co — all set in
+`src/site.config.mjs`, the email relays forwarding to Eric's inbox. The
+first one that confirms delivery wins; if none do, the customer gets a
+pre-filled email draft and the address to copy, never a false
+confirmation.
 
 No Node on a machine? `scripts/serve.ps1` still previews the built site
 (`powershell -ExecutionPolicy Bypass -File scripts/serve.ps1`), but you

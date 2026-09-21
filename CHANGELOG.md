@@ -6,6 +6,18 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed — quote form survives a relay outage (2026-09-22)
+- FormSubmit's servers went down (Cloudflare 522 / timeouts), so every
+  quote fell back to "send by email instead" — the safety net worked, but
+  the site had a single point of failure. The form now tries Apps Script,
+  then Web3Forms, then FormSubmit (each when configured) and stops at the
+  first that confirms delivery (`assets/js/relays.mjs`, tested). Web3Forms
+  needs a free access key in `src/site.config.mjs`.
+- The success message only promises a confirmation email when the relay
+  that delivered actually sends one; the fallback also shows the inbox
+  address as text for phones with no mail app.
+- Corrected the pre-live checklist: FormSubmit was activated on 8 Sept.
+
 ### Changed — redesign, build system and booking requests (2026-09-21)
 Full rebuild on branch `site-redesign`. Spec:
 `docs/superpowers/specs/2026-09-21-site-redesign-design.md`.

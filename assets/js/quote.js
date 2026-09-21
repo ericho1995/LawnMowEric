@@ -1,13 +1,15 @@
 // Quote form on quote.html: booking request picker, inline validation,
 // prefill from the URL, submission and analytics events.
 //
-// Submission order: Apps Script backend (when configured) -> FormSubmit
-// email relay -> a pre-filled email draft the customer can send themselves.
-// A request only counts as sent when the service confirms it; FormSubmit
-// answers an un-activated form with HTTP 200 + {"success":"false"}, so the
-// status code alone is not proof of delivery.
+// Submission order (see relays.mjs): Apps Script backend -> Web3Forms ->
+// FormSubmit, each only if configured, stopping at the first that confirms
+// delivery; if none do, a pre-filled email draft the customer can send
+// themselves. A request only counts as sent when the service confirms it —
+// FormSubmit answers an un-activated form with HTTP 200 +
+// {"success":"false"}, and was unreachable altogether on 22 Sept 2026.
 
 import { melbourneToday, bookableDates, windowsFor, isSlotFull, formatDate } from './booking.mjs';
+import { sendFirst } from './relays.mjs';
 
 const config = window.TLC_CONFIG;
 const form = document.getElementById('quote-form');
@@ -229,9 +231,36 @@ function init() {
       'Nothing is booked until you accept the quote and pay the deposit.';
   }
 
+  // Web3Forms: free, called from the browser with a public access key. The
+  // customer's `email` field becomes the Reply-To automatically. (Its free
+  // plan has no autoresponder, so no customer confirmation email here.)
+  async function sendViaWeb3Forms(data) {
+    try {
+      return await withTimeout(10000, async (signal) => {
+        const fields = Object.fromEntries(Object.entries(data).filter(([k]) => !k.startsWith('_')));
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            ...fields,
+            access_key: config.web3formsAccessKey,
+            subject: 'New quote request — ' + (data.suburb || 'The Lawn Care'),
+            from_name: 'The Lawn Care website',
+            botcheck: false
+          }),
+          signal
+        });
+        const json = await res.json();
+        return json.success === true;
+      });
+    } catch (err) {
+      return false;
+    }
+  }
+
   async function sendViaFormSubmit(data) {
     try {
-      return await withTimeout(15000, async (signal) => {
+      return await withTimeout(10000, async (signal) => {
         // The raw address, exactly as before: FormSubmit ties its one-time
         // activation to this URL, and '@' is valid in a path segment.
         const res = await fetch('https://formsubmit.co/ajax/' + config.formEmail, {
@@ -275,7 +304,12 @@ function init() {
       '&body=' + encodeURIComponent(lines.join('\n'));
   }
 
-  function showSuccess(data) {
+  // Only promise a confirmation email when the service that delivered the
+  // request actually sends one (Apps Script and FormSubmit do; Web3Forms'
+  // free plan doesn't).
+  const SENDS_CONFIRMATION = { sheet: true, formsubmit: true };
+
+  function showSuccess(data, via) {
     form.hidden = true;
     const estimator = $('estimator');
     if (estimator) estimator.hidden = true;
@@ -283,7 +317,9 @@ function init() {
     $('success-slot').textContent = data.flexible
       ? "You told us you're flexible, so we'll suggest a time with your quote."
       : 'You requested ' + data.day + '.';
-    $('success-email').textContent = 'A confirmation email should reach ' + data.email + ' shortly. If it doesn’t, check your junk folder.';
+    $('success-email').textContent = SENDS_CONFIRMATION[via]
+      ? 'A confirmation email should reach ' + data.email + ' shortly. If it doesn’t, check your junk folder.'
+      : 'We’ll reply to ' + data.email + ' or call you within one business day.';
     $('quote-success').hidden = false;
     $('quote-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('success-title').focus({ preventScroll: true });
@@ -302,7 +338,7 @@ function init() {
 
     // Honeypot: real visitors never see this field. Pretend it worked so the
     // bot doesn't learn to retry, but send nothing.
-    if (data._honey) { showSuccess(data); return; }
+    if (data._honey) { showSuccess(data, null); return; }
 
     const firstInvalid = validate();
     if (firstInvalid) {
@@ -316,17 +352,22 @@ function init() {
     submitBtn.disabled = true;
     statusEl.textContent = 'Sending your request…';
 
-    const sent = (await sendViaAppsScript(data)) || (await sendViaFormSubmit(data));
+    const result = await sendFirst([
+      { name: 'sheet', enabled: !!config.gasWebhookUrl, send: sendViaAppsScript },
+      { name: 'web3forms', enabled: !!config.web3formsAccessKey, send: sendViaWeb3Forms },
+      { name: 'formsubmit', enabled: !!config.formEmail, send: sendViaFormSubmit }
+    ], data);
 
     sending = false;
     submitBtn.disabled = false;
-    if (sent) {
+    if (result.ok) {
       statusEl.textContent = '';
-      track('generate_lead', { suburb: data.suburb, frequency: data.frequency, flexible: !!data.flexible });
-      showSuccess(data);
+      track('generate_lead', { suburb: data.suburb, frequency: data.frequency, flexible: !!data.flexible, via: result.via });
+      showSuccess(data, result.via);
       return;
     }
 
+    track('quote_send_failed');
     statusEl.dataset.state = 'error';
     statusEl.textContent = "Your request didn't go through automatically. Your details are still here — send them by email instead:";
     const link = document.createElement('a');
@@ -334,7 +375,11 @@ function init() {
     link.href = mailtoHref(data);
     link.textContent = 'Open a pre-filled email';
     link.addEventListener('click', () => track('quote_fallback_email'));
-    fallbackEl.appendChild(link);
+    // Many phones have no mail app set up, so show the address to copy too.
+    const address = document.createElement('p');
+    address.className = 'form-note';
+    address.textContent = 'Or email your details to ' + config.formEmail + '.';
+    fallbackEl.append(link, address);
     fallbackEl.hidden = false;
   });
 }

@@ -129,6 +129,7 @@ function browserConfig(config) {
     mapboxToken: /^pk\./.test(config.mapboxToken || '') ? config.mapboxToken : '',
     overtureRelease: config.overtureRelease,
     formEmail: config.formEmail,
+    web3formsAccessKey: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(config.web3formsAccessKey || '') ? config.web3formsAccessKey : '',
     pricing: { bands: config.pricing.bands },
     booking: config.booking,
     offer: config.offer
