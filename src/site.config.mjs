@@ -24,6 +24,11 @@ export default {
   // Inbox FormSubmit forwards quote requests to.
   formEmail: 'ericho995@gmail.com',
 
+  // Optional: a free Mapbox public token (starts "pk.") gives the quote
+  // page's map sharper, deeper-zoom satellite imagery than the free Esri
+  // default. Leave the placeholder to keep using Esri.
+  mapboxToken: 'PASTE_YOUR_MAPBOX_PUBLIC_TOKEN_HERE',
+
   offer: {
     firstMowDiscount: 10
   },

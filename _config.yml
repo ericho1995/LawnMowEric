@@ -1,0 +1,17 @@
+# GitHub Pages runs Jekyll over this repo. The site is plain HTML built by
+# scripts/build.mjs, so Jekyll only needs to copy files through.
+#
+# Keep everything that isn't the website off thelawncare.com.au:
+# - src/ page sources start with front matter, which Jekyll would otherwise
+#   render as Liquid templates (mangling the {{...}} build tokens);
+# - tooling, tests and internal docs (requirements, marketing plan,
+#   changelog) were being published as public pages.
+exclude:
+  - src/
+  - scripts/
+  - tests/
+  - docs/
+  - package.json
+  - README.md
+  - CHANGELOG.md
+  - skills-lock.json

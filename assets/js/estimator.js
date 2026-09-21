@@ -1,15 +1,15 @@
-// Lawn-size estimator on quote.html: address search (OSM Nominatim),
-// satellite imagery (Esri), property boundary lookup (Vicmap Property),
-// drawing/editing (Leaflet.draw) and geodesic area (Turf). Fills the quote
-// form's hidden area/estimate fields and lawn size when the customer
-// clicks "Use this for my quote". Needs window.TLC_CONFIG (inlined by the
-// build) and Leaflet, Leaflet.draw and Turf loaded first.
+// Lawn-size estimator on quote.html. Address search (OSM Nominatim) ->
+// real block size from Vicmap Property -> "how much of it is lawn?" cards
+// (or typical sizes outside Victoria) -> an orange box on the map the
+// customer can move and resize to fine-tune, plus an optional nature-strip
+// allowance. Fills the quote form's hidden area/estimate fields and lawn
+// size on "Use this for my quote". Needs window.TLC_CONFIG (inlined by the
+// build) and Leaflet + Turf loaded first.
 (function () {
   // ---- Pricing rules ----
   // Bands come from src/site.config.mjs (pricing.bands) via window.TLC_CONFIG,
   // the same source as every price table on the site. Covers a standard mow
-  // only; edging, hedging, green waste and access surcharges are quoted
-  // separately. Anything past the last band is quote-on-request.
+  // only; anything past the last band is quote-on-request.
   const PRICING = { bands: window.TLC_CONFIG.pricing.bands };
 
   function computeEstimate(areaM2) {
@@ -29,210 +29,246 @@
   const useBtn = document.getElementById('estimator-use');
   const addressInput = document.getElementById('lawn-address');
   const searchBtn = document.getElementById('lawn-address-search');
-  const polygonBtn = document.getElementById('draw-polygon-btn');
-  const rectBtn = document.getElementById('draw-rect-btn');
-  const editBtn = document.getElementById('draw-edit-btn');
-  const undoBtn = document.getElementById('draw-undo-btn');
-  const clearBtn = document.getElementById('draw-clear-btn');
+  const blockPicker = document.getElementById('size-pick-block');
+  const fallbackPicker = document.getElementById('size-pick-fallback');
+  const natureStripWrap = document.getElementById('nature-strip-toggle-wrap');
+  const natureStripToggle = document.getElementById('nature-strip-toggle');
 
-  const DEFAULT_HINT = 'Easiest: draw a box over your lawn, then drag its corners with "Adjust shape" until it fits. Use "Trace a shape" if your lawn isn\'t box-shaped.';
-  const MIN_DRAW_ZOOM = 18;
-  const SHAPE_COLOR = '#C98A2B';
+  const DEFAULT_HINT = 'Search your address above first — we\'ll size the options to your actual block.';
+  const SHAPE_COLOR = '#1E9F35'; // the real property boundary outline (reference only, not interactive)
+  const BOX_COLOR = '#FF6A1A'; // the adjustable estimate box — a different color on purpose, so it's obvious which shape you can drag
+  const NATURE_STRIP_M2 = 20; // typical council-verge allowance, added on top of the picked size
+
+  // Free Mapbox account + public token gets noticeably sharper/deeper-zoom imagery
+  // than Esri's free tier in most of Melbourne. Set mapboxToken in
+  // src/site.config.mjs (the default public token, starting "pk."). Until then
+  // this falls back to the Esri imagery silently.
+  const MAPBOX_TOKEN = window.TLC_CONFIG.mapboxToken || '';
+  const useMapbox = !!MAPBOX_TOKEN;
+  const MAP_ZOOM = 20; // matches the live quote.html's zoom level — the pixelation was already present there at z20, capping to 19 just made the view less zoomed-in without actually fixing it
 
   let map = null;
-  let drawnItems = null;
-  let polygonHandler = null;
-  let rectangleHandler = null;
-  let editHandler = null;
-  let activeHandler = null;
-  let isEditing = false;
+  let parcelLayer = null;
+  let blockAreaM2 = 0;
   let currentAreaM2 = 0;
   let currentEstimate = null;
+  let boxCenter = null; // {lat, lng} — where the resizable box gets placed
+  let boxBounds = null; // {n, s, e, w}
+  let boxRect = null;
+  let boxHandles = [];
+  let boxManuallyAdjusted = false;
 
   function setStatus(text, state) {
     statusEl.textContent = text || DEFAULT_HINT;
     if (state) statusEl.dataset.state = state; else statusEl.removeAttribute('data-state');
   }
 
-  function bindRemovePopup(layer) {
-    const wrap = document.createElement('div');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn btn-ghost';
-    btn.style.cssText = 'padding:6px 12px;font-size:0.8rem;';
-    btn.textContent = 'Remove this shape';
-    btn.addEventListener('click', function () {
-      drawnItems.removeLayer(layer);
-      map.closePopup();
-      recalcArea();
-      updateEditAvailability();
-    });
-    wrap.appendChild(btn);
-    layer.bindPopup(wrap);
-  }
-
-  function setDrawingState(isDrawing) {
-    polygonBtn.classList.toggle('active', isDrawing && activeHandler === polygonHandler);
-    rectBtn.classList.toggle('active', isDrawing && activeHandler === rectangleHandler);
-    undoBtn.disabled = !(isDrawing && activeHandler === polygonHandler);
-    polygonBtn.disabled = isEditing;
-    rectBtn.disabled = isEditing;
-    if (!isDrawing) activeHandler = null;
-  }
-
-  function ensureCloseZoom() {
-    if (map.getZoom() < MIN_DRAW_ZOOM) {
-      map.setZoom(19);
-      setStatus('Zoomed in closer first, for a more accurate result.', 'ok');
-    }
-  }
-
-  function updateEditAvailability() {
-    if (isEditing) return;
-    editBtn.disabled = !drawnItems || drawnItems.getLayers().length === 0;
-  }
-
   function initMap() {
     if (map) return;
     map = L.map(mapContainer, { center: [-37.8136, 144.9631], zoom: 13 });
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 20,
-      crossOrigin: true,
-      attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
-    }).addTo(map);
-
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 20,
-      opacity: 0.9,
-      crossOrigin: true
-    }).addTo(map);
-
-    drawnItems = new L.FeatureGroup();
-    map.addLayer(drawnItems);
-
-    polygonHandler = new L.Draw.Polygon(map, {
-      allowIntersection: false,
-      showArea: true,
-      metric: true,
-      shapeOptions: { color: SHAPE_COLOR, weight: 3 }
-    });
-    rectangleHandler = new L.Draw.Rectangle(map, {
-      showArea: true,
-      metric: true,
-      shapeOptions: { color: SHAPE_COLOR, weight: 3 }
-    });
-    editHandler = new L.EditToolbar.Edit(map, {
-      featureGroup: drawnItems,
-      selectedPathOptions: {
-        color: SHAPE_COLOR, weight: 4, dashArray: '8,6',
-        maintainColor: true
-      }
-    });
-
-    map.on(L.Draw.Event.CREATED, function (e) {
-      bindRemovePopup(e.layer);
-      drawnItems.addLayer(e.layer);
-      recalcArea();
-      updateEditAvailability();
-    });
-    map.on(L.Draw.Event.DRAWSTART, function () { setDrawingState(true); });
-    map.on(L.Draw.Event.DRAWSTOP, function () { setDrawingState(false); });
-    map.on(L.Draw.Event.EDITED, function () {
-      recalcArea();
-      setStatus('Shape updated — check the estimate below.', 'ok');
-    });
-  }
-
-  function exitEditMode(save) {
-    if (!isEditing) return;
-    isEditing = false;
-    if (save) editHandler.save(); else editHandler.revertLayers();
-    editHandler.disable();
-    editBtn.classList.remove('active');
-    editBtn.textContent = 'Adjust shape';
-    setDrawingState(false);
-    updateEditAvailability();
-  }
-
-  editBtn.addEventListener('click', function () {
-    initMap();
-    if (!isEditing) {
-      if (activeHandler) { activeHandler.disable(); }
-      isEditing = true;
-      editHandler.enable();
-      editBtn.classList.add('active');
-      editBtn.textContent = 'Done adjusting';
-      polygonBtn.disabled = true;
-      rectBtn.disabled = true;
-      setStatus('Drag the corner handles to reshape it, then click "Done adjusting".', 'ok');
+    if (useMapbox) {
+      // satellite-streets-v12 bundles imagery + road/place labels in one layer,
+      // same combined look as the Esri imagery+reference-labels pair below.
+      L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=' + MAPBOX_TOKEN, {
+        maxZoom: 22,
+        crossOrigin: true,
+        attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.digitalglobe.com/">DigitalGlobe</a>'
+      }).addTo(map);
     } else {
-      exitEditMode(true);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        // Matches the live quote.html exactly (maxZoom 20) — a Clarity-endpoint swap
+        // and a maxZoom-19 cap were both tried here and both made things look worse,
+        // not better. Reverted to the original known-good config.
+        maxZoom: 20,
+        crossOrigin: true,
+        attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics'
+      }).addTo(map);
+
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 20,
+        opacity: 0.9,
+        crossOrigin: true
+      }).addTo(map);
     }
-  });
+  }
 
-  polygonBtn.addEventListener('click', function () {
-    initMap();
-    exitEditMode(true);
-    if (activeHandler) activeHandler.disable();
-    ensureCloseZoom();
-    activeHandler = polygonHandler;
-    polygonHandler.enable();
-    setStatus('Click points around the edge of your lawn — click the first point again (or double-click) to close the shape.');
-  });
+  // ---- Resizable estimate box (plain Leaflet corner-drag handles — no drawing library) ----
+  function metersToLatLngDelta(lat, metersNS, metersEW) {
+    return {
+      dLat: metersNS / 111320,
+      dLng: metersEW / (111320 * Math.cos(lat * Math.PI / 180))
+    };
+  }
 
-  rectBtn.addEventListener('click', function () {
-    initMap();
-    exitEditMode(true);
-    if (activeHandler) activeHandler.disable();
-    ensureCloseZoom();
-    activeHandler = rectangleHandler;
-    rectangleHandler.enable();
-    setStatus('Click and drag a box over your lawn.');
-  });
+  function boxCorners() {
+    return {
+      nw: [boxBounds.n, boxBounds.w], ne: [boxBounds.n, boxBounds.e],
+      se: [boxBounds.s, boxBounds.e], sw: [boxBounds.s, boxBounds.w]
+    };
+  }
 
-  undoBtn.addEventListener('click', function () {
-    if (activeHandler === polygonHandler) {
-      try { polygonHandler.deleteLastVertex(); } catch (e) { /* nothing to undo */ }
+  function boxAreaM2() {
+    if (!boxBounds) return 0;
+    const ring = [
+      [boxBounds.w, boxBounds.n], [boxBounds.e, boxBounds.n],
+      [boxBounds.e, boxBounds.s], [boxBounds.w, boxBounds.s], [boxBounds.w, boxBounds.n]
+    ];
+    try { return turf.area({ type: 'Polygon', coordinates: [ring] }); } catch (e) { return 0; }
+  }
+
+  function syncBoxLayers() {
+    boxRect.setBounds([[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]]);
+    const corners = boxCorners();
+    boxHandles.forEach(function (m) { m.setLatLng(corners[m._cornerKey]); });
+  }
+
+  function onHandleDrag(key, marker) {
+    const ll = marker.getLatLng();
+    if (key === 'nw') { boxBounds.n = ll.lat; boxBounds.w = ll.lng; }
+    if (key === 'ne') { boxBounds.n = ll.lat; boxBounds.e = ll.lng; }
+    if (key === 'se') { boxBounds.s = ll.lat; boxBounds.e = ll.lng; }
+    if (key === 'sw') { boxBounds.s = ll.lat; boxBounds.w = ll.lng; }
+    boxRect.setBounds([[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]]);
+    const corners = boxCorners();
+    boxHandles.forEach(function (m) { if (m._cornerKey !== key) m.setLatLng(corners[m._cornerKey]); });
+    boxManuallyAdjusted = true;
+    const area = boxAreaM2();
+    showResult(area);
+    setStatus('Box resized — ' + Math.round(area) + 'm² now selected. Use it below, or pick a different option.', 'ok');
+  }
+
+  // Whole-box drag-to-move: L.Rectangle has no built-in drag support (that's marker-only
+  // in core Leaflet), so this is done by hand — track the pointer from mousedown on the
+  // rectangle itself, translate boxBounds by the pointer's delta, and disable map panning
+  // for the duration so dragging the box doesn't also drag the map underneath it.
+  function onBoxMoveStart(e) {
+    L.DomEvent.stopPropagation(e);
+    map.dragging.disable();
+    const start = e.latlng;
+    const startBounds = { n: boxBounds.n, s: boxBounds.s, e: boxBounds.e, w: boxBounds.w };
+
+    function onMove(ev) {
+      const dLat = ev.latlng.lat - start.lat;
+      const dLng = ev.latlng.lng - start.lng;
+      boxBounds = {
+        n: startBounds.n + dLat, s: startBounds.s + dLat,
+        e: startBounds.e + dLng, w: startBounds.w + dLng
+      };
+      syncBoxLayers();
     }
-  });
+    function onEnd() {
+      map.off('mousemove', onMove);
+      map.off('mouseup', onEnd);
+      map.dragging.enable();
+      boxManuallyAdjusted = true;
+      const area = boxAreaM2();
+      showResult(area);
+      setStatus('Box moved — ' + Math.round(area) + 'm² selected. Use it below, or pick a different option.', 'ok');
+    }
+    map.on('mousemove', onMove);
+    map.on('mouseup', onEnd);
+  }
 
-  clearBtn.addEventListener('click', function () {
-    exitEditMode(false);
-    if (drawnItems) drawnItems.clearLayers();
-    recalcArea();
-    updateEditAvailability();
-  });
+  function clearBox() {
+    if (boxRect) { map.removeLayer(boxRect); boxRect = null; }
+    boxHandles.forEach(function (m) { map.removeLayer(m); });
+    boxHandles = [];
+    boxBounds = null;
+  }
 
-  function recalcArea() {
-    let totalM2 = 0;
-    let shapeCount = 0;
-    if (drawnItems) {
-      drawnItems.eachLayer(function (layer) {
-        shapeCount++;
-        try { totalM2 += turf.area(layer.toGeoJSON()); } catch (e) { /* skip malformed shape */ }
+  function placeBox(centerLat, centerLng, areaM2) {
+    const side = Math.sqrt(Math.max(areaM2, 1));
+    const { dLat, dLng } = metersToLatLngDelta(centerLat, side / 2, side / 2);
+    boxBounds = { n: centerLat + dLat, s: centerLat - dLat, e: centerLng + dLng, w: centerLng - dLng };
+    const bounds = [[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]];
+    if (!boxRect) {
+      boxRect = L.rectangle(bounds, { color: BOX_COLOR, weight: 3, fillOpacity: 0.22, dashArray: '6,4', className: 'estimate-box' }).addTo(map);
+      boxRect.on('mousedown', onBoxMoveStart);
+    } else {
+      boxRect.setBounds(bounds);
+    }
+    const corners = boxCorners();
+    const handleIcon = L.divIcon({ className: 'box-handle', iconSize: [26, 26], iconAnchor: [13, 13] });
+    if (!boxHandles.length) {
+      ['nw', 'ne', 'se', 'sw'].forEach(function (key) {
+        const marker = L.marker(corners[key], { icon: handleIcon, draggable: true, zIndexOffset: 1000 }).addTo(map);
+        marker._cornerKey = key;
+        marker.on('drag', function () { onHandleDrag(key, marker); });
+        boxHandles.push(marker);
       });
+    } else {
+      boxHandles.forEach(function (m) { m.setLatLng(corners[m._cornerKey]); });
     }
-    currentAreaM2 = totalM2;
-    clearBtn.disabled = shapeCount === 0;
+  }
 
-    if (totalM2 < 1) {
-      resultEl.classList.remove('visible');
-      currentEstimate = null;
-      setStatus();
-      return;
-    }
+  function clearPickers() {
+    blockPicker.hidden = true;
+    fallbackPicker.hidden = true;
+    natureStripWrap.hidden = true;
+    natureStripToggle.checked = false;
+    Array.prototype.forEach.call(blockPicker.children, function (btn) { btn.classList.remove('active'); });
+    Array.prototype.forEach.call(fallbackPicker.children, function (btn) { btn.classList.remove('active'); });
+    resultEl.classList.remove('visible');
+    currentEstimate = null;
+    currentAreaM2 = 0;
+    boxManuallyAdjusted = false;
+    if (map) clearBox();
+  }
 
-    currentEstimate = computeEstimate(totalM2);
-
-    areaM2El.textContent = totalM2.toFixed(0);
-    areaSqftEl.textContent = (totalM2 * 10.7639).toFixed(0);
+  function showResult(areaM2) {
+    currentAreaM2 = areaM2;
+    currentEstimate = computeEstimate(areaM2);
+    areaM2El.textContent = areaM2.toFixed(0);
+    areaSqftEl.textContent = (areaM2 * 10.7639).toFixed(0);
     priceEl.textContent = currentEstimate.quoteOnRequest
       ? 'Quote on request'
       : '$' + currentEstimate.low + '–$' + currentEstimate.high;
     resultEl.classList.add('visible');
-    setStatus('Shape captured — trace more area, or use this estimate below.', 'ok');
   }
+
+  function selectCard(container, btn) {
+    Array.prototype.forEach.call(container.children, function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+
+  function applySelection(baseAreaM2) {
+    boxManuallyAdjusted = false;
+    const area = baseAreaM2 + (natureStripToggle.checked ? NATURE_STRIP_M2 : 0);
+    showResult(area);
+    if (boxCenter) placeBox(boxCenter.lat, boxCenter.lng, area);
+    setStatus('Estimate updated — drag the box on the map to fine-tune, or pick a different option.', 'ok');
+  }
+
+  blockPicker.addEventListener('click', function (e) {
+    const btn = e.target.closest('.size-pick-card');
+    if (!btn || !blockAreaM2) return;
+    selectCard(blockPicker, btn);
+    natureStripToggle.checked = (btn === blockPicker.children[0]); // "Just the front yard" — nature strip almost always applies
+    applySelection(blockAreaM2 * parseFloat(btn.dataset.pct));
+  });
+
+  fallbackPicker.addEventListener('click', function (e) {
+    const btn = e.target.closest('.size-pick-card');
+    if (!btn) return;
+    selectCard(fallbackPicker, btn);
+    applySelection(parseFloat(btn.dataset.area));
+  });
+
+  natureStripToggle.addEventListener('change', function () {
+    // If the box has been hand-resized, keep that shape/number — just add or remove the
+    // nature-strip allowance from it, instead of snapping back to the card's base %.
+    if (boxManuallyAdjusted) {
+      const adjusted = currentAreaM2 + (natureStripToggle.checked ? NATURE_STRIP_M2 : -NATURE_STRIP_M2);
+      showResult(Math.max(adjusted, 1));
+      setStatus((natureStripToggle.checked ? 'Added' : 'Removed') + ' the nature-strip allowance — ' + Math.round(currentAreaM2) + 'm² now selected.', 'ok');
+      return;
+    }
+    const activeBlock = blockPicker.querySelector('.size-pick-card.active');
+    const activeFallback = fallbackPicker.querySelector('.size-pick-card.active');
+    if (activeBlock && blockAreaM2) { applySelection(blockAreaM2 * parseFloat(activeBlock.dataset.pct)); return; }
+    if (activeFallback) { applySelection(parseFloat(activeFallback.dataset.area)); }
+  });
 
   function pickSizeBand(areaM2) {
     if (areaM2 < 150) return 'Small courtyard (under 150m²)';
@@ -253,11 +289,6 @@
     document.getElementById('quote-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  // Victoria's own government cadastre (Vicmap Property, via a public,
-  // key-less, CORS-open ArcGIS FeatureServer) — the actual surveyed parcel
-  // boundary for a point, not a guess. Melbourne-only (matches current
-  // service area); silently falls back to manual drawing outside Victoria
-  // or if the service is unreachable.
   const PARCEL_API = 'https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/services/Vicmap_Property/FeatureServer/0/query';
 
   async function fetchParcelBoundary(lat, lon) {
@@ -281,26 +312,28 @@
 
   async function goToAddress(lat, lon) {
     initMap();
-    exitEditMode(false);
-    if (activeHandler) { activeHandler.disable(); activeHandler = null; setDrawingState(false); }
-    if (drawnItems) drawnItems.clearLayers();
-    recalcArea();
-    updateEditAvailability();
-    map.setView([lat, lon], 20);
-    setStatus('Found it — looking up the property boundary…', 'ok');
+    clearPickers();
+    blockAreaM2 = 0;
+    boxCenter = { lat: lat, lng: lon };
+    if (parcelLayer) { map.removeLayer(parcelLayer); parcelLayer = null; }
+    map.setView([lat, lon], MAP_ZOOM);
+    setStatus('Found it — looking up your block size…', 'ok');
 
     const parcel = await fetchParcelBoundary(lat, lon);
     if (parcel) {
-      const gj = L.geoJSON(parcel, { style: { color: SHAPE_COLOR, weight: 3, fillOpacity: 0.15 } });
-      gj.eachLayer(function (layer) {
-        bindRemovePopup(layer);
-        drawnItems.addLayer(layer);
-      });
-      recalcArea();
-      updateEditAvailability();
-      setStatus('Found your property boundary — drag its edges with "Adjust shape" to trim it down to just the lawn (exclude the house, driveway and garden beds).', 'ok');
+      blockAreaM2 = turf.area(parcel);
+      parcelLayer = L.geoJSON(parcel, { style: { color: SHAPE_COLOR, weight: 3, fillOpacity: 0.12 } }).addTo(map);
+      try {
+        const centroid = turf.centroid(parcel).geometry.coordinates;
+        boxCenter = { lat: centroid[1], lng: centroid[0] };
+      } catch (e) { /* keep the address point as center */ }
+      blockPicker.hidden = false;
+      natureStripWrap.hidden = false;
+      setStatus('Your block is about ' + Math.round(blockAreaM2) + 'm² — how much of it is lawn?', 'ok');
     } else {
-      setStatus('Found the address — draw a box over your lawn, or trace it for an irregular shape.', 'ok');
+      fallbackPicker.hidden = false;
+      natureStripWrap.hidden = false;
+      setStatus('Couldn\'t look up an exact block size for this address — pick the closest size below.', 'ok');
     }
   }
 
@@ -322,13 +355,14 @@
       goToAddress(parseFloat(results[0].lat), parseFloat(results[0].lon));
     } catch (err) {
       initMap();
-      setStatus('Address search is unavailable right now — pan and zoom the map manually instead.', 'error');
+      setStatus('Address search is unavailable right now — pick a typical size below instead.', 'error');
+      fallbackPicker.hidden = false;
+      natureStripWrap.hidden = false;
     } finally {
       searchBtn.disabled = false;
     }
   }
 
-  // ---- Address autocomplete (debounced Nominatim lookup, dropdown of suggestions) ----
   const suggestionsEl = document.getElementById('address-suggestions');
   let suggestDebounce = null;
   let suggestQueryId = 0;
@@ -361,7 +395,6 @@
       item.className = 'address-suggestion';
       item.setAttribute('role', 'option');
       item.textContent = result.display_name;
-      // mousedown (not click) fires before the input's blur handler would close the dropdown.
       item.addEventListener('mousedown', function (e) { e.preventDefault(); selectSuggestion(result); });
       suggestionsEl.appendChild(item);
     });
@@ -375,10 +408,10 @@
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if (!res.ok) return;
       const results = await res.json();
-      if (queryId !== suggestQueryId) return; // a newer keystroke has since fired — drop this stale response
+      if (queryId !== suggestQueryId) return;
       currentSuggestions = results;
       renderSuggestions(results);
-    } catch (err) { /* silent - Find address / Enter still work without suggestions */ }
+    } catch (err) { /* silent */ }
   }
 
   addressInput.addEventListener('input', function () {
@@ -416,7 +449,6 @@
 
   searchBtn.addEventListener('click', searchAddress);
 
-  // Lazy-init: don't pull map tiles until the estimator scrolls into view.
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {

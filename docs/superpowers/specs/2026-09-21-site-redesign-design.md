@@ -82,10 +82,13 @@ assets/
   Manrope for body text. *Revised from Fraunces during the design pass:
   cream ground + high-contrast serif is the most generic generated-site
   look, and this brand's cream is fixed, so the type had to move instead.*
-- **Colour** (taken from the logo): Paddock `#1D3526` for dark sections,
-  Fairway `#3E6B44` for actions, Rough `#22392A` as the second stripe
-  colour, Cream `#F7F5EA` as the ground, Straw `#C98A2B` only for prices
-  and the offer. Keep and refine the dark mode.
+- **Colour** (taken from the logo): Fairway `#3E6B44` for actions, Cream
+  `#F7F5EA` as the ground, white and very light greens for surfaces, pale
+  stripe greens `#E4EEDA`/`#D3E4C7`, and Straw `#C98A2B` only for prices and
+  the offer. *Revised after build: no dark-green section backgrounds —
+  Eric's standing preference from the prototype round ("use white or very
+  light green"). Dark greens stay as text and accents only.* Keep and
+  refine the OS dark mode.
 - **Shape:** radii 4/8/12px (sturdy, not bouncy); hairline rows and
   dividers instead of card grids. Cards only for real objects: the price
   "job sheet" and the quote form.
@@ -94,9 +97,10 @@ assets/
   Left-aligned throughout.
 - **No template chrome:** no tracked-out eyebrow labels over headings, no
   emoji in headings, no "→" appended to links.
-- **Motion:** one orchestrated moment — a mower pass wipes the hero on load
-  to reveal the stripes. No scroll-reveal on every section. Nothing moves
-  under `prefers-reduced-motion`.
+- **Motion:** none on load. *Revised after build: a mower-pass hero reveal
+  was built, then removed — Eric had already asked for the similar
+  `mow-reveal` animation to go.* Motion only answers actions (menu open,
+  FAQ expand, sticky bar).
 
 ## Features
 
@@ -142,6 +146,14 @@ assets/
   (confirmation, deposit).
 - **Confirmation email:** Apps Script path uses `MailApp` to email the
   customer. FormSubmit path uses `_autoresponse`.
+
+### Map estimator
+- *Added after build:* the quote page uses the newer estimator from
+  `quote-prototype.html` (recovered from git after the prototype set was
+  deleted): real block size from Vicmap, "how much of it is lawn?" cards
+  (typical sizes outside Victoria), a movable/resizable box, and a
+  nature-strip allowance. Prices come from the shared config; an optional
+  Mapbox token lives in `src/site.config.mjs`.
 
 ### Lead-capture fixes
 - FormSubmit success now requires `json.success === "true"`. Anything

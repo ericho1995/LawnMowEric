@@ -3,6 +3,41 @@
 Before pointing `thelawncare.com.au` at this site and advertising it
 publicly, work through this list. Grouped by who needs to act.
 
+## Launching the 2026-09-21 redesign (branch `site-redesign`) — do these first
+
+- [ ] **Activate FormSubmit — without this, no quote reaches you.** The
+      quote form now checks FormSubmit's real answer, so until the form is
+      activated customers see "didn't go through — send by email instead"
+      rather than a fake "received". After the redesign is live: submit
+      one quote request yourself on thelawncare.com.au, click "Activate
+      Form" in the email FormSubmit sends to `ericho995@gmail.com`, then
+      submit a second test and confirm it lands in your inbox.
+- [ ] **Check the Pages deploy after merging.** In the GitHub repo's
+      Actions tab, "pages-build-deployment" should go green, and "Site
+      checks" too. Then confirm `thelawncare.com.au/docs/requirements.html`
+      now returns 404 (the new `_config.yml` stops internal docs being
+      published) and that a suburb page like
+      `thelawncare.com.au/lawn-mowing/brunswick.html` loads.
+- [ ] **Booking rules** in `src/site.config.mjs` → `booking`: which days
+      you mow (`workDays` — currently all seven), how much notice you need
+      (`leadDays`, currently 2), and days off (`blackout`). Then
+      `npm run build` and commit.
+- [ ] **GA4:** put your Measurement ID in `src/site.config.mjs` →
+      `gaMeasurementId`, `npm run build`, commit. The site then tracks
+      `quote_start`, `generate_lead` (a sent quote request) and
+      `cta_click`. Mark `generate_lead` as a key event in GA4.
+- [ ] **Read the new copy:** the privacy policy (`src/pages/privacy.html`)
+      and the ten suburb descriptions (`src/data/suburbs.mjs`). They're
+      written to be accurate and not over-claim, but they're your words
+      in public.
+- [ ] **Real-phone test:** menu, sticky "Get a free quote" bar, the day
+      picker, and the map estimator.
+- [ ] **Apps Script (when you set it up, or if already deployed):** paste
+      the new `docs/apps-script/Code.gs`, redeploy as a *new version* of
+      the same deployment, put the URL in `src/site.config.mjs` →
+      `gasWebhookUrl`, build, commit. Optional Script Property
+      `SLOT_CAPACITY` (default 3 open requests per morning/afternoon).
+
 ## Business (Eric)
 
 - [x] ABN registered — 79 369 208 780
@@ -65,15 +100,14 @@ low-risk here, but it's Eric's call to confirm before it's flipped.
 - [x] Pricing bands + overgrown-lawn surcharge reflected in the instant
       estimator
 - [x] Deposit-for-booking messaging on the quote success panel
-- [ ] **Swap the hero and "Our work" gallery photos for real ones** once
-      Eric has photos from actual jobs — they're currently Unsplash stock
-      images, captioned generically on purpose so nothing implies they're
-      specific completed work, but real photos will convert better and
-      close the "is this a real local operator" trust gap
-- [ ] **Add real reviews** once any exist — the Reviews section
-      deliberately ships with an honest empty state instead of invented
-      testimonials; see the commented template in `index.html`'s `#reviews`
-      section for the exact markup to duplicate
+- [ ] **Add before/after photos from real jobs** (with the customer's
+      permission) — `src/pages/work.html` has a commented before/after
+      template; put images in `assets/work/`. The stock photos on that page
+      are labelled as stock. Real photos will convert better and close the
+      "is this a real local operator" trust gap.
+- [ ] **Add real reviews** once any exist — `src/pages/reviews.html` has a
+      commented review-card template, and the homepage reviews block is an
+      honest empty state until then.
 - [ ] Confirm mobile layout on a real phone, not just emulation — resize
       the browser or open on-device and check: nav, hero, quote form
       fields, and the lawn-size estimator map/buttons all usable one-handed
@@ -108,8 +142,8 @@ are in `CHANGELOG.md` [Unreleased].
       Property `ADMIN_SECRET` to a new passphrase (not the old
       `Mowtown-Eric-2026!` — that one is already in this repo's public git
       history and should be treated as burned), deploy as a Web App, and
-      paste the deployment URL into `GAS_WEBHOOK_URL` near the top of the
-      `<script>` in both `quote.html` and `admin.html`. Until this is done,
+      paste the deployment URL into `gasWebhookUrl` in
+      `src/site.config.mjs`, then `npm run build`. Until this is done,
       `admin.html` shows an explicit "not connected yet" message (instead
       of silently showing nothing) and quote capture still works via
       FormSubmit email — nothing breaks in the meantime.
@@ -118,9 +152,9 @@ are in `CHANGELOG.md` [Unreleased].
       per `docs/marketing-plan.md` the single highest-leverage thing on the
       list — not yet done.
 - [ ] **Get a real GA4 Measurement ID** (analytics.google.com → create a
-      property → Web data stream) and replace every `G-XXXXXXXXXX`
-      placeholder across the HTML files with it (one `sed`/find-replace
-      across the repo). Currently a harmless no-op placeholder.
+      property → Web data stream) and set it once in
+      `src/site.config.mjs` → `gaMeasurementId`, then `npm run build`.
+      Until then the build leaves the GA script off every page.
 - [ ] **Public liability insurance quotes** (BizCover or similar) — still
       not in place; real exposure once jobs involve property risk.
 - [ ] **Test the quote page's map/estimator on a real phone**, not just a

@@ -6,17 +6,13 @@ import { escapeHtml } from './render.mjs';
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Manrope:wght@400..800&display=swap';
 
 const EXTRA_STYLES = {
-  leaflet: [
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css'
-  ],
+  leaflet: ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'],
   admin: ['{{root}}assets/css/admin.css']
 };
 
 const EXTRA_SCRIPTS = {
   estimator: [
     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
     'https://cdnjs.cloudflare.com/ajax/libs/Turf.js/7.4.0/turf.min.js',
     '{{root}}assets/js/estimator.js'
   ]
@@ -124,6 +120,7 @@ function faqEntity(faqsUsed) {
 function browserConfig(config) {
   return {
     gasWebhookUrl: isRealWebhook(config.gasWebhookUrl) ? config.gasWebhookUrl : '',
+    mapboxToken: /^pk\./.test(config.mapboxToken || '') ? config.mapboxToken : '',
     formEmail: config.formEmail,
     pricing: { bands: config.pricing.bands },
     booking: config.booking,
@@ -150,7 +147,7 @@ export function renderPage({ meta, bodyHtml, root, config, suburbs, partials, fa
     '<meta name="description" content="' + description + '">',
     meta.robots ? '<meta name="robots" content="' + escapeHtml(meta.robots) + '">' : '',
     indexable ? '<link rel="canonical" href="' + canonical + '">' : '',
-    '<meta name="theme-color" content="#1D3526">',
+    '<meta name="theme-color" content="#F7F5EA">',
     '<meta property="og:type" content="website">',
     '<meta property="og:site_name" content="' + escapeHtml(config.business.name) + '">',
     '<meta property="og:title" content="' + title + '">',

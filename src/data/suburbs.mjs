@@ -158,7 +158,7 @@ export default [
       'Weatherboards often have a side path to the backyard — note the gate or code on the form.'
     ],
     faq: [
-      { q: 'How do I know which size band my lawn is in?', a: 'Use the map on the quote page: find your address, draw a box over the lawn, and it measures the area and gives you a price range on the spot.' }
+      { q: 'How do I know which size band my lawn is in?', a: 'Use the map on the quote page: find your address, pick roughly how much of the block is lawn, and it gives you a size and a price range on the spot. You can move and resize the box on the map to fine-tune it.' }
     ],
     nearby: ['melbourne-cbd', 'brunswick']
   },

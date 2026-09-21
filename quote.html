@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Get a free lawn mowing quote — The Lawn Care</title>
-<meta name="description" content="Get a free lawn mowing quote in Melbourne. Draw your lawn on the map for an instant price range, request a day, and get a price and a time back within one business day.">
+<meta name="description" content="Get a free lawn mowing quote in Melbourne. Size your lawn on the map for an instant price range, request a day, and get a price and a time back within one business day.">
 <link rel="canonical" href="https://thelawncare.com.au/quote.html">
-<meta name="theme-color" content="#1D3526">
+<meta name="theme-color" content="#F7F5EA">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Lawn Care">
 <meta property="og:title" content="Get a free lawn mowing quote — The Lawn Care">
-<meta property="og:description" content="Get a free lawn mowing quote in Melbourne. Draw your lawn on the map for an instant price range, request a day, and get a price and a time back within one business day.">
+<meta property="og:description" content="Get a free lawn mowing quote in Melbourne. Size your lawn on the map for an instant price range, request a day, and get a price and a time back within one business day.">
 <meta property="og:url" content="https://thelawncare.com.au/quote.html">
 <meta property="og:image" content="https://thelawncare.com.au/assets/logo-icon.svg">
 <meta name="twitter:card" content="summary">
@@ -21,8 +21,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Manrope:wght@400..800&display=swap">
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
-<script>window.TLC_CONFIG = {"gasWebhookUrl":"","formEmail":"ericho995@gmail.com","pricing":{"bands":[{"id":"small","label":"Small","size":"under 150m²","max":150,"low":55,"high":70},{"id":"medium","label":"Medium","size":"150–400m²","max":400,"low":75,"high":95},{"id":"large","label":"Large","size":"400–800m²","max":800,"low":105,"high":140}]},"booking":{"leadDays":2,"horizonDays":21,"workDays":[0,1,2,3,4,5,6],"blackout":["2026-12-25","2026-12-26","2027-01-01"],"slotCapacity":3},"offer":{"firstMowDiscount":10}};</script>
+<script>window.TLC_CONFIG = {"gasWebhookUrl":"","mapboxToken":"","formEmail":"ericho995@gmail.com","pricing":{"bands":[{"id":"small","label":"Small","size":"under 150m²","max":150,"low":55,"high":70},{"id":"medium","label":"Medium","size":"150–400m²","max":400,"low":75,"high":95},{"id":"large","label":"Large","size":"400–800m²","max":800,"low":105,"high":140}]},"booking":{"leadDays":2,"horizonDays":21,"workDays":[0,1,2,3,4,5,6],"blackout":["2026-12-25","2026-12-26","2027-01-01"],"slotCapacity":3},"offer":{"firstMowDiscount":10}};</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -125,8 +124,8 @@
     <div class="quote-main">
 
       <div class="form-card estimator" id="estimator">
-        <h2 class="form-section-title">Measure your lawn <span class="hint">optional</span></h2>
-        <p class="form-section-intro">Find your address and we'll outline the property. Trim it down to just the lawn for its exact area and a price range on the spot. <a href="#quote-form">Skip to the form</a></p>
+        <h2 class="form-section-title">Size your lawn <span class="hint">optional</span></h2>
+        <p class="form-section-intro">Find your address and we'll look up your block size. Pick roughly how much of it is lawn for a price range on the spot, then move or resize the box on the map if you want to be precise. <a href="#quote-form">Skip to the form</a></p>
 
         <div class="estimator-step"><span class="estimator-step-num">1</span> Find your address</div>
         <div class="estimator-search">
@@ -137,24 +136,61 @@
         </div>
         <div id="lawn-map"></div>
 
-        <div class="estimator-step estimator-step-spaced"><span class="estimator-step-num">2</span> Mark your lawn</div>
-        <div class="estimator-draw-controls">
-          <button type="button" class="btn btn-primary" id="draw-rect-btn">Draw a box</button>
-          <button type="button" class="btn btn-ghost" id="draw-polygon-btn">Trace a shape</button>
-          <button type="button" class="btn btn-ghost" id="draw-edit-btn" disabled>Adjust shape</button>
-          <button type="button" class="btn btn-ghost" id="draw-undo-btn" disabled>Undo last point</button>
-          <button type="button" class="btn btn-ghost" id="draw-clear-btn" disabled>Clear</button>
+        <div class="estimator-step estimator-step-spaced"><span class="estimator-step-num">2</span> How much of it is lawn?</div>
+        <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Search your address above first — we'll size the options to your actual block.</div>
+
+        <div class="size-pick-grid" id="size-pick-block" hidden>
+          <button type="button" class="size-pick-card" data-pct="0.18">
+            <span class="size-pick-title">Just the front yard</span>
+            <span class="size-pick-sub">About 18% of the block</span>
+          </button>
+          <button type="button" class="size-pick-card" data-pct="0.40">
+            <span class="size-pick-title">Front and back yards</span>
+            <span class="size-pick-sub">About 40% of the block</span>
+          </button>
+          <button type="button" class="size-pick-card" data-pct="0.58">
+            <span class="size-pick-title">Most of the block</span>
+            <span class="size-pick-sub">Minus the house and driveway</span>
+          </button>
+          <button type="button" class="size-pick-card" data-pct="0.35">
+            <span class="size-pick-title">Not sure</span>
+            <span class="size-pick-sub">Use a typical estimate</span>
+          </button>
         </div>
-        <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Easiest: draw a box over your lawn, then drag its corners with "Adjust shape" until it fits. Use "Trace a shape" if your lawn isn't box-shaped.</div>
+
+        <div class="size-pick-grid" id="size-pick-fallback" hidden>
+          <button type="button" class="size-pick-card" data-area="100">
+            <span class="size-pick-title">Small courtyard</span>
+            <span class="size-pick-sub">Under 150m²</span>
+          </button>
+          <button type="button" class="size-pick-card" data-area="275">
+            <span class="size-pick-title">Medium yard</span>
+            <span class="size-pick-sub">150–400m²</span>
+          </button>
+          <button type="button" class="size-pick-card" data-area="600">
+            <span class="size-pick-title">Large block</span>
+            <span class="size-pick-sub">400–800m²</span>
+          </button>
+          <button type="button" class="size-pick-card" data-area="900">
+            <span class="size-pick-title">Extra-large</span>
+            <span class="size-pick-sub">800m² and up</span>
+          </button>
+        </div>
+
+        <label class="choice nature-strip-toggle" id="nature-strip-toggle-wrap" hidden>
+          <input type="checkbox" id="nature-strip-toggle">
+          <span>Also mow the nature strip out front <small>Council-owned, but most owners still need it done. Adds a typical 20m².</small></span>
+        </label>
+
         <div class="estimator-result" id="estimator-result">
           <div class="figures">
-            <div><b id="estimator-area-m2">–</b><span>m² measured</span></div>
+            <div><b id="estimator-area-m2">–</b><span>m² of lawn (estimate)</span></div>
             <div><b id="estimator-area-sqft">–</b><span>sq ft</span></div>
             <div><b id="estimator-price">–</b><span>estimate per standard mow</span></div>
           </div>
           <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
         </div>
-        <p class="estimator-note">An estimate for a regularly mowed lawn, based on the area you draw. The final price is confirmed before you book. Overgrown lawns attract a surcharge, and edging, hedging, green waste and hard-to-reach sites are quoted on top. Imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim. Property boundaries: Vicmap Property (Victoria only — elsewhere, draw the shape yourself).</p>
+        <p class="estimator-note">An estimate for a regularly mowed lawn; the final price is confirmed before you book. Once you pick an option, an orange box appears on the map at about that size: drag inside it to move it over your lawn, or drag a corner dot to resize it. The green outline is your property boundary, for reference. Overgrown lawns attract a surcharge, and edging, hedging, green waste and hard-to-reach sites are quoted on top. Block size: Vicmap Property (Victoria only — elsewhere, pick a typical size). Imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
       </div>
 
       <div class="form-card" id="quote-card">
@@ -348,12 +384,12 @@
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a class="brand brand-on-dark" href="index.html">
+        <a class="brand" href="index.html">
           <img class="brand-mark" src="assets/logo-icon.svg" alt="" width="36" height="36">
           <span class="brand-name">The Lawn Care</span>
         </a>
         <p>Lawn mowing across Melbourne's inner and northern suburbs, by one operator who does every job in person.</p>
-        <a class="btn btn-light" href="quote.html" data-track="footer_quote">Get a free quote</a>
+        <a class="btn btn-primary" href="quote.html" data-track="footer_quote">Get a free quote</a>
       </div>
       <div class="footer-col">
         <p class="footer-heading">The Lawn Care</p>
@@ -393,7 +429,6 @@
 <script src="assets/js/site.js"></script>
 <script type="module" src="assets/js/quote.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/7.4.0/turf.min.js"></script>
 <script src="assets/js/estimator.js"></script>
 </body>

@@ -6,6 +6,51 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed — redesign, build system and booking requests (2026-09-21)
+Full rebuild on branch `site-redesign`. Spec:
+`docs/superpowers/specs/2026-09-21-site-redesign-design.md`.
+
+- **New design** keeping the forest-green/cream/gold brand: Archivo +
+  Manrope type, the logo's mowing stripes (as pale lawn greens) in the home
+  hero and closing CTA, light surfaces throughout (no dark-green section
+  backgrounds), no load animation, prices shown up front in a "job sheet",
+  no emoji in headings. Replaces both the old live design and the unshipped
+  `*-prototype.html` set, which is deleted.
+- **Quote page map estimator** is now the newer one from the prototype:
+  real block size from Vicmap, "how much of it is lawn?" cards, a
+  movable/resizable box and a nature-strip option (Leaflet.draw removed).
+  Optional Mapbox token in `src/site.config.mjs`.
+- **Build step** (`npm run build`, zero dependencies): pages live in
+  `src/`, shared header/footer/metadata are written once, and the root HTML
+  is generated. `npm run check` and a GitHub Action catch broken links and
+  anchors, missing titles, invalid JSON-LD and stale output.
+- **Mobile navigation** — the old site hid every nav link under 900px with
+  no menu. New accessible menu, sticky header, and a sticky "Get a free
+  quote" bar on phones.
+- **10 suburb landing pages** (`lawn-mowing/*.html`) with local copy,
+  likely price bands and FAQs; structured data for LocalBusiness,
+  Service prices, breadcrumbs and FAQs.
+- **Booking request picker** on the quote page (days from 2 days out,
+  morning/afternoon, weekend mornings from 9am per EPA noise rules,
+  blackout dates, live capacity once Apps Script is set up). Customers
+  get a confirmation email.
+- **Fixed:** a FormSubmit form that hasn't been activated returns HTTP 200
+  with `success: "false"`, which the old code showed as "request received"
+  while nothing was delivered. Now falls back to a pre-filled email.
+- **Fixed (Apps Script):** customer input was written raw into the sheet —
+  a formula-injection risk, and phone numbers lost their leading zero.
+- **Fixed:** internal docs (requirements, marketing plan, changelog) were
+  being published on thelawncare.com.au by GitHub Pages' Jekyll step;
+  `_config.yml` now excludes them and the page sources.
+- **Fixed:** the kill switch couldn't find `status.txt` from subfolders;
+  `serve.ps1` hung on browser preconnect sockets (new `scripts/serve.mjs`).
+- **Copy:** deposit wording is "$20 or 20%, whichever is higher"; privacy
+  policy names every service that handles customer data; the "Best value"
+  badge on the $85 plan is gone (it costs more than pay-per-visit for small
+  lawns); stock photos are labelled as stock.
+- GA4 is set once in `src/site.config.mjs` and left off every page until a
+  real ID is there; tracks `quote_start`, `generate_lead`, `cta_click`.
+
 ### Added — critical-review follow-up: SEO, real admin backend, spam protection, phone number
 - **`robots.txt` + `sitemap.xml`** at the repo root — the site had zero
   crawler guidance before this; GitHub Pages was serving 8 public pages
