@@ -6,26 +6,28 @@
    ========================================================================== */
 
 :root {
-  color-scheme: light dark;
+  /* Always light, even when the phone is in dark mode (Eric: the site felt
+     too dark, and he wants no dark-green backgrounds). */
+  color-scheme: light;
 
   /* Palette — taken from the logo */
   --paddock: #1D3526;
   --fairway: #3E6B44;
   --rough: #22392A;
-  --cream: #F7F5EA;
+  --cream: #FBFAF6;
   --straw: #C98A2B;
   --straw-light: #E0A94F;
   --straw-deep: #8F5E14;
-  --ink: #1B251C;
+  --ink: #1F2421;
 
   /* Roles */
   --bg: var(--cream);
   --surface: #FFFFFF;
-  --surface-tint: #EDEFE0;
+  --surface-tint: #F3F2EC;
   --text: var(--ink);
-  --text-muted: #56604F;
-  --line: #D9DCCB;
-  --line-strong: #B4BBA3;
+  --text-muted: #5B615C;
+  --line: #E2E1D9;
+  --line-strong: #C4C3B8;
   --action: var(--fairway);
   --action-hover: #31573A;
   --on-action: #FFFFFF;
@@ -33,13 +35,12 @@
   --price: var(--straw-deep);
   --focus: #C98A2B;
   --error: #A5321F;
-  /* Light surfaces only — no dark-green section backgrounds (Eric's call:
-     "use white or very light green"). The stripes are pale mown-lawn
-     greens with dark text on top. */
-  --stripe-a: #E4EEDA;
-  --stripe-b: #D3E4C7;
-  --hero-bg: #E6EFDE;
-  --footer-bg: #E3EDD9;
+  /* Light, mostly neutral surfaces — green is for accents (buttons, links,
+     ticks, the logo), not backgrounds. The stripes are a pale hint of lawn. */
+  --stripe-a: #F0F4EA;
+  --stripe-b: #E3ECDA;
+  --hero-bg: #F3F2EC;
+  --footer-bg: #F3F2EC;
   --offer-bg: #F3E6C8;
 
   --font-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
@@ -53,49 +54,6 @@
   --gutter: clamp(16px, 4vw, 40px);
   --section: clamp(56px, 9vw, 112px);
   --shadow: 0 1px 0 rgba(29, 53, 38, 0.04), 0 18px 40px -24px rgba(29, 53, 38, 0.45);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121D16;
-    --surface: #1A281F;
-    --surface-tint: #16231B;
-    --text: #EEF0E4;
-    --text-muted: #A9B29F;
-    --line: #2C3C30;
-    --line-strong: #43574A;
-    --action: #4A7D51;
-    --action-hover: #588F60;
-    --link: #9BCBA2;
-    --price: var(--straw-light);
-    --error: #F08B76;
-    --stripe-a: #1A2B20;
-    --stripe-b: #213628;
-    --hero-bg: #172519;
-    --footer-bg: #0F1912;
-    --offer-bg: #2B2414;
-    --shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #121D16;
-  --surface: #1A281F;
-  --surface-tint: #16231B;
-  --text: #EEF0E4;
-  --text-muted: #A9B29F;
-  --line: #2C3C30;
-  --line-strong: #43574A;
-  --action: #4A7D51;
-  --action-hover: #588F60;
-  --link: #9BCBA2;
-  --price: var(--straw-light);
-  --error: #F08B76;
-  --stripe-a: #1A2B20;
-  --stripe-b: #213628;
-  --hero-bg: #172519;
-  --footer-bg: #0F1912;
-  --offer-bg: #2B2414;
-  --shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
 }
 
 /* ---------- Base ---------- */
