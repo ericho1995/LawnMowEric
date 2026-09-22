@@ -29,7 +29,7 @@ export default {
   // service going down can't stop quotes (FormSubmit was down 22 Sept 2026).
   // Get one free at https://web3forms.com (enter the inbox address above; the
   // key arrives by email). It's meant to be public, so it's fine in this repo.
-  web3formsAccessKey: 'PASTE_YOUR_WEB3FORMS_ACCESS_KEY_HERE',
+  web3formsAccessKey: 'dd94a83c-9d9f-41f9-999b-b1d5d466d1f7',
 
   // Optional: a free Mapbox public token (starts "pk.") gives the quote
   // page's map sharper, deeper-zoom satellite imagery than the free Esri
