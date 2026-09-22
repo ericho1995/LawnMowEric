@@ -2,11 +2,13 @@
 // Nominatim) -> real block from Vicmap Property -> house footprints from
 // Overture Maps, subtracted to get the yard -> "how much of it is lawn?"
 // cards (block percentages when there's no footprint; typical sizes outside
-// Victoria) -> an orange box on the map the customer can move and resize,
-// plus an optional nature-strip allowance. Fills the quote form's hidden
+// Victoria) -> an orange box on the map the customer can move, resize and
+// rotate a full 360° (drag handle or slider), plus an optional nature-strip
+// allowance. Fills the quote form's hidden
 // area/estimate fields and lawn size on "Use this for my quote". Needs
 // window.TLC_CONFIG (inlined by the build) and Leaflet + Turf loaded first.
 import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './footprint-lookup.mjs';
+import { boxCorners, resizeFromCorner, angleFromCenter, rotateHandlePoint, dominantAngle, snapAngle } from './box-geometry.mjs';
 
 (function () {
   // ---- Pricing rules ----
@@ -36,6 +38,9 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
   const fallbackPicker = document.getElementById('size-pick-fallback');
   const natureStripWrap = document.getElementById('nature-strip-toggle-wrap');
   const natureStripToggle = document.getElementById('nature-strip-toggle');
+  const rotateControl = document.getElementById('box-rotate-control');
+  const rotateSlider = document.getElementById('box-rotate');
+  const rotateValue = document.getElementById('box-rotate-value');
 
   const DEFAULT_HINT = 'Search your address above first — we\'ll size the options to your actual block.';
   const SHAPE_COLOR = '#1E9F35'; // the real property boundary outline (reference only, not interactive)
@@ -62,9 +67,12 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
   let currentAreaM2 = 0;
   let currentEstimate = null;
   let boxCenter = null; // {lat, lng} — where the resizable box gets placed
-  let boxBounds = null; // {n, s, e, w}
-  let boxRect = null;
+  let box = null; // { cx, cy, w, h, angle } in local metres — see box-geometry.mjs
+  let boxOrigin = null; // { lat, lng } origin of the local metre frame
+  let boxPoly = null;
   let boxHandles = [];
+  let rotateHandle = null;
+  let blockAngle = 0; // the block's main orientation, so the box starts square to the fences
   let boxManuallyAdjusted = false;
 
   function setStatus(text, state) {
@@ -106,70 +114,65 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
     map.attributionControl.addAttribution('Blocks &copy; State of Victoria (DTP) CC BY 4.0');
     map.attributionControl.addAttribution('Buildings &copy; Overture Maps, OSM contributors ODbL');
     warmUpFootprints(OVERTURE_FALLBACK_RELEASE);
+    // The rotate handle's distance is in pixels, so re-place it after zooming.
+    map.on('zoomend', function () { if (box) syncBoxLayers(); });
   }
 
-  // ---- Resizable estimate box (plain Leaflet corner-drag handles — no drawing library) ----
-  function metersToLatLngDelta(lat, metersNS, metersEW) {
-    return {
-      dLat: metersNS / 111320,
-      dLng: metersEW / (111320 * Math.cos(lat * Math.PI / 180))
-    };
+  // ---- The lawn box: move, resize and rotate 360° (plain Leaflet, no drawing library) ----
+  // The box lives in local metres around `boxOrigin` (see box-geometry.mjs), so
+  // rotation is plain trigonometry; it's only converted to lat/lng for drawing.
+  const MY = 110574; // metres per degree of latitude
+  function mx() { return 111320 * Math.cos(boxOrigin.lat * Math.PI / 180); }
+  function toLocal(ll) { return { x: (ll.lng - boxOrigin.lng) * mx(), y: (ll.lat - boxOrigin.lat) * MY }; }
+  function toLatLng(p) { return L.latLng(boxOrigin.lat + p.y / MY, boxOrigin.lng + p.x / mx()); }
+
+  // The rotate handle floats a fixed ~34px above the box at any zoom level.
+  function handleOffsetM() {
+    const metresPerPx = 156543.03392 * Math.cos(boxOrigin.lat * Math.PI / 180) / Math.pow(2, map.getZoom());
+    return 34 * metresPerPx;
   }
 
-  function boxCorners() {
-    return {
-      nw: [boxBounds.n, boxBounds.w], ne: [boxBounds.n, boxBounds.e],
-      se: [boxBounds.s, boxBounds.e], sw: [boxBounds.s, boxBounds.w]
-    };
-  }
+  function boxAreaM2() { return box ? box.w * box.h : 0; }
 
-  function boxAreaM2() {
-    if (!boxBounds) return 0;
-    const ring = [
-      [boxBounds.w, boxBounds.n], [boxBounds.e, boxBounds.n],
-      [boxBounds.e, boxBounds.s], [boxBounds.w, boxBounds.s], [boxBounds.w, boxBounds.n]
-    ];
-    try { return turf.area({ type: 'Polygon', coordinates: [ring] }); } catch (e) { return 0; }
-  }
-
-  function syncBoxLayers() {
-    boxRect.setBounds([[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]]);
-    const corners = boxCorners();
-    boxHandles.forEach(function (m) { m.setLatLng(corners[m._cornerKey]); });
+  function syncBoxLayers(skip) {
+    const c = boxCorners(box);
+    boxPoly.setLatLngs([c.nw, c.ne, c.se, c.sw].map(toLatLng));
+    boxHandles.forEach(function (m) { if (m !== skip) m.setLatLng(toLatLng(c[m._cornerKey])); });
+    if (rotateHandle && rotateHandle !== skip) rotateHandle.setLatLng(toLatLng(rotateHandlePoint(box, handleOffsetM())));
+    rotateSlider.value = String(Math.round(box.angle) % 360);
+    rotateValue.textContent = Math.round(box.angle) % 360 + '°';
   }
 
   function onHandleDrag(key, marker) {
-    const ll = marker.getLatLng();
-    if (key === 'nw') { boxBounds.n = ll.lat; boxBounds.w = ll.lng; }
-    if (key === 'ne') { boxBounds.n = ll.lat; boxBounds.e = ll.lng; }
-    if (key === 'se') { boxBounds.s = ll.lat; boxBounds.e = ll.lng; }
-    if (key === 'sw') { boxBounds.s = ll.lat; boxBounds.w = ll.lng; }
-    boxRect.setBounds([[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]]);
-    const corners = boxCorners();
-    boxHandles.forEach(function (m) { if (m._cornerKey !== key) m.setLatLng(corners[m._cornerKey]); });
+    box = resizeFromCorner(box, key, toLocal(marker.getLatLng()));
+    syncBoxLayers(marker);
     boxManuallyAdjusted = true;
     const area = boxAreaM2();
     showResult(area);
     setStatus('Box resized — ' + Math.round(area) + 'm² now selected. Use it below, or pick a different option.', 'ok');
   }
 
-  // Whole-box drag-to-move: L.Rectangle has no built-in drag support (that's marker-only
-  // in core Leaflet), so this is done by hand — track the pointer from mousedown on the
-  // rectangle itself, translate boxBounds by the pointer's delta, and disable map panning
-  // for the duration so dragging the box doesn't also drag the map underneath it.
+  // Dragging the handle snaps gently to the block's axes (easy to line up with
+  // fences); the slider is for exact angles, so it never snaps.
+  function setAngle(angle, skip, snap) {
+    box.angle = snap ? snapAngle(angle, blockAngle) : angle;
+    syncBoxLayers(skip);
+    setStatus('Box rotated to ' + Math.round(box.angle) % 360 + '°. The size stays the same — drag a corner to resize.', 'ok');
+  }
+
+  // Whole-box drag-to-move: Leaflet vector shapes can't be dragged, so track
+  // the pointer from mousedown on the box, move its centre by the pointer's
+  // delta, and pause map panning so the map doesn't slide underneath.
   function onBoxMoveStart(e) {
     L.DomEvent.stopPropagation(e);
     map.dragging.disable();
-    const start = e.latlng;
-    const startBounds = { n: boxBounds.n, s: boxBounds.s, e: boxBounds.e, w: boxBounds.w };
+    const start = toLocal(e.latlng);
+    const startCentre = { cx: box.cx, cy: box.cy };
 
     function onMove(ev) {
-      const dLat = ev.latlng.lat - start.lat;
-      const dLng = ev.latlng.lng - start.lng;
-      boxBounds = {
-        n: startBounds.n + dLat, s: startBounds.s + dLat,
-        e: startBounds.e + dLng, w: startBounds.w + dLng
-      };
+      const p = toLocal(ev.latlng);
+      box.cx = startCentre.cx + (p.x - start.x);
+      box.cy = startCentre.cy + (p.y - start.y);
       syncBoxLayers();
     }
     function onEnd() {
@@ -186,34 +189,51 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
   }
 
   function clearBox() {
-    if (boxRect) { map.removeLayer(boxRect); boxRect = null; }
+    if (boxPoly) { map.removeLayer(boxPoly); boxPoly = null; }
     boxHandles.forEach(function (m) { map.removeLayer(m); });
     boxHandles = [];
-    boxBounds = null;
+    if (rotateHandle) { map.removeLayer(rotateHandle); rotateHandle = null; }
+    box = null;
+    rotateControl.hidden = true;
   }
 
+  // A square of `areaM2` centred on (centerLat, centerLng). Keeps the
+  // customer's rotation if they've already turned the box; otherwise starts
+  // lined up with the block.
   function placeBox(centerLat, centerLng, areaM2) {
+    const keepAngle = box ? box.angle : blockAngle;
+    boxOrigin = { lat: centerLat, lng: centerLng };
     const side = Math.sqrt(Math.max(areaM2, 1));
-    const { dLat, dLng } = metersToLatLngDelta(centerLat, side / 2, side / 2);
-    boxBounds = { n: centerLat + dLat, s: centerLat - dLat, e: centerLng + dLng, w: centerLng - dLng };
-    const bounds = [[boxBounds.s, boxBounds.w], [boxBounds.n, boxBounds.e]];
-    if (!boxRect) {
-      boxRect = L.rectangle(bounds, { color: BOX_COLOR, weight: 3, fillOpacity: 0.22, dashArray: '6,4', className: 'estimate-box' }).addTo(map);
-      boxRect.on('mousedown', onBoxMoveStart);
-    } else {
-      boxRect.setBounds(bounds);
-    }
-    const corners = boxCorners();
-    const handleIcon = L.divIcon({ className: 'box-handle', iconSize: [26, 26], iconAnchor: [13, 13] });
-    if (!boxHandles.length) {
+    box = { cx: 0, cy: 0, w: side, h: side, angle: keepAngle };
+    const corners = boxCorners(box);
+
+    if (!boxPoly) {
+      boxPoly = L.polygon([corners.nw, corners.ne, corners.se, corners.sw].map(toLatLng), {
+        color: BOX_COLOR, weight: 3, fillOpacity: 0.22, dashArray: '6,4', className: 'estimate-box'
+      }).addTo(map);
+      boxPoly.on('mousedown', onBoxMoveStart);
+
+      const handleIcon = L.divIcon({ className: 'box-handle', iconSize: [28, 28], iconAnchor: [14, 14] });
       ['nw', 'ne', 'se', 'sw'].forEach(function (key) {
-        const marker = L.marker(corners[key], { icon: handleIcon, draggable: true, zIndexOffset: 1000 }).addTo(map);
+        const marker = L.marker(toLatLng(corners[key]), { icon: handleIcon, draggable: true, zIndexOffset: 1000, keyboard: false, title: 'Drag to resize' }).addTo(map);
         marker._cornerKey = key;
         marker.on('drag', function () { onHandleDrag(key, marker); });
+        marker.on('dragend', function () { syncBoxLayers(); }); // snap onto the (clamped) corner
         boxHandles.push(marker);
       });
-    } else {
-      boxHandles.forEach(function (m) { m.setLatLng(corners[m._cornerKey]); });
+
+      const rotateIcon = L.divIcon({ className: 'box-rotate-handle', iconSize: [32, 32], iconAnchor: [16, 16], html: '<span aria-hidden="true">&#x21bb;</span>' });
+      rotateHandle = L.marker(toLatLng(rotateHandlePoint(box, handleOffsetM())), { icon: rotateIcon, draggable: true, zIndexOffset: 1100, keyboard: false, title: 'Drag to rotate' }).addTo(map);
+      rotateHandle.on('drag', function () { setAngle(angleFromCenter(box, toLocal(rotateHandle.getLatLng())), rotateHandle, true); });
+      rotateHandle.on('dragend', function () { syncBoxLayers(); });
+    }
+    syncBoxLayers();
+    rotateControl.hidden = false;
+
+    // The customer needs to see the whole box (and its handles) to adjust it.
+    const view = boxPoly.getBounds().pad(0.25);
+    if (!map.getBounds().contains(view)) {
+      map.fitBounds(parcelLayer ? parcelLayer.getBounds().extend(view) : view, { padding: [24, 24], maxZoom: MAP_ZOOM });
     }
   }
 
@@ -288,6 +308,19 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
     applySelection(parseFloat(btn.dataset.area));
   });
 
+  rotateSlider.addEventListener('input', function () {
+    if (box) setAngle(Number(rotateSlider.value), null, false);
+  });
+
+  // The block's main orientation, from its longest boundary (local metres).
+  function blockOrientation(parcel) {
+    const g = parcel.geometry;
+    const ring = g.type === 'Polygon' ? g.coordinates[0] : g.coordinates[0][0];
+    const lat0 = ring[0][1], lng0 = ring[0][0];
+    const m = 111320 * Math.cos(lat0 * Math.PI / 180);
+    return dominantAngle(ring.map(function (p) { return { x: (p[0] - lng0) * m, y: (p[1] - lat0) * MY }; }));
+  }
+
   natureStripToggle.addEventListener('change', function () {
     // If the box has been hand-resized, keep that shape/number — just add or remove the
     // nature-strip allowance from it, instead of snapping back to the card's base %.
@@ -348,6 +381,7 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
     initMap();
     clearPickers();
     blockAreaM2 = 0;
+    blockAngle = 0;
     boxCenter = { lat: lat, lng: lon };
     if (parcelLayer) { map.removeLayer(parcelLayer); parcelLayer = null; }
     map.setView([lat, lon], MAP_ZOOM);
@@ -358,6 +392,7 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
     if (seq !== searchSeq) return;
     if (parcel) {
       blockAreaM2 = turf.area(parcel);
+      blockAngle = blockOrientation(parcel);
       parcelLayer = L.geoJSON(parcel, { style: { color: SHAPE_COLOR, weight: 3, fillOpacity: 0.12 } }).addTo(map);
       // Show the whole block (the lawn box may start in the back yard), but
       // never zoom in past the usual sharp imagery level.

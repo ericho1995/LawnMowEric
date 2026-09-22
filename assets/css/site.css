@@ -682,17 +682,36 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .size-pick-sub { font-size: 0.85rem; color: var(--text-muted); line-height: 1.35; }
 .nature-strip-toggle { margin-top: 16px; }
 
-/* The movable/resizable estimate box on the map (plain Leaflet, no drawing library) */
-.box-handle {
+/* The movable/resizable/rotatable estimate box on the map (plain Leaflet).
+   Leaflet's stylesheet loads after this one and sets .leaflet-marker-icon to
+   display:block, which collapsed the dots into slivers — hence the doubled
+   class to win on specificity. */
+.leaflet-marker-icon.box-handle {
   width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   cursor: grab; touch-action: none; /* stop touch-scroll stealing the drag */
 }
 .box-handle::before {
-  content: ""; width: 14px; height: 14px; border-radius: 50%;
+  content: ""; display: block; width: 14px; height: 14px; border-radius: 50%;
   background: #FF6A1A; border: 2px solid #FFFFFF; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 .box-handle:active { cursor: grabbing; }
+.leaflet-marker-icon.box-rotate-handle {
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab; touch-action: none;
+}
+.box-rotate-handle span {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: #FF6A1A; color: #FFFFFF; border: 2px solid #FFFFFF;
+  font: 700 16px/1 system-ui, sans-serif; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.box-rotate-handle:active { cursor: grabbing; }
+
+/* Rotation slider under the map: precise angles, and easier than dragging on a phone */
+.box-rotate { display: grid; grid-template-columns: auto minmax(0, 1fr) 3.5ch; align-items: center; gap: 12px; margin-top: 12px; }
+.box-rotate label { font-weight: 700; font-size: 0.95rem; }
+.box-rotate input[type="range"] { width: 100%; min-height: 44px; accent-color: #FF6A1A; }
+.box-rotate output { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
 .leaflet-interactive.estimate-box { cursor: move; }
 .estimator .btn-ghost:hover { border-color: var(--text); }
 .estimator-status { font-size: 0.925rem; font-weight: 600; margin-top: 12px; min-height: 1.4em; color: var(--text-muted); }

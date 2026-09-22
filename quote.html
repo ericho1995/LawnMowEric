@@ -145,8 +145,13 @@
         <ul class="map-legend" aria-label="Map key">
           <li><span class="swatch swatch-block" aria-hidden="true"></span>Your block</li>
           <li><span class="swatch swatch-house" aria-hidden="true"></span>House</li>
-          <li><span class="swatch swatch-box" aria-hidden="true"></span>Lawn estimate: drag to move, drag a corner to resize</li>
+          <li><span class="swatch swatch-box" aria-hidden="true"></span>Lawn estimate: drag to move, drag a corner to resize, drag &#x21bb; to rotate</li>
         </ul>
+        <div class="box-rotate" id="box-rotate-control" hidden>
+          <label for="box-rotate">Rotate the box</label>
+          <input type="range" id="box-rotate" min="0" max="359" step="1" value="0">
+          <output id="box-rotate-value" for="box-rotate">0°</output>
+        </div>
 
         <div class="estimator-step estimator-step-spaced"><span class="estimator-step-num">2</span> How much of it is lawn?</div>
         <div class="estimator-status" id="estimator-status" role="status" aria-live="polite">Search your address above first — we'll size the options to your actual block.</div>
@@ -202,7 +207,7 @@
           </div>
           <button type="button" class="btn btn-primary" id="estimator-use">Use this for my quote</button>
         </div>
-        <p class="estimator-note">An estimate for a regularly mowed lawn; the final price is confirmed before you book. The house is taken off using building footprints traced from satellite imagery, which can miss a new build or include a carport or verandah — adjust the box if it looks off. Overgrown lawns attract a surcharge, and edging, hedging, green waste and hard-to-reach sites are quoted on top. Outside Victoria there's no block data, so pick a typical size. Block outline: Vicmap Property &copy; State of Victoria (DTP), CC BY 4.0. House footprints &copy; Overture Maps Foundation and OpenStreetMap contributors, ODbL. Imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
+        <p class="estimator-note">An estimate for a regularly mowed lawn; the final price is confirmed before you book. The house is taken off using building footprints traced from satellite imagery, which can miss a new build or include a carport or verandah. The box starts lined up with your block: move it, resize it from a corner, or rotate it with the &#x21bb; handle or the slider until it matches the lawn. Overgrown lawns attract a surcharge, and edging, hedging, green waste and hard-to-reach sites are quoted on top. Outside Victoria there's no block data, so pick a typical size. Block outline: Vicmap Property &copy; State of Victoria (DTP), CC BY 4.0. House footprints &copy; Overture Maps Foundation and OpenStreetMap contributors, ODbL. Imagery: Esri World Imagery. Address search: OpenStreetMap Nominatim.</p>
       </div>
 
       <div class="form-card" id="quote-card">
