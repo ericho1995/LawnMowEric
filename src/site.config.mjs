@@ -7,7 +7,8 @@ export default {
   business: {
     name: 'The Lawn Care',
     abn: '79 369 208 780',
-    locality: 'Melbourne',
+    locality: 'Deer Park',
+    postcode: '3023',
     region: 'VIC',
     country: 'AU'
   },

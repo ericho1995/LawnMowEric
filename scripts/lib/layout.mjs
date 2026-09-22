@@ -57,11 +57,12 @@ function businessEntity(config, suburbs) {
     url: config.siteUrl,
     image: config.siteUrl + 'assets/og-image.jpg',
     logo: config.siteUrl + 'assets/apple-touch-icon.png',
-    description: "Lawn mowing across Melbourne's inner and northern suburbs, priced by lawn size and quoted before you book.",
+    description: "Lawn mowing in Deer Park and Melbourne's west, priced by lawn size and quoted before you book.",
     priceRange: '$$',
     address: {
       '@type': 'PostalAddress',
       addressLocality: config.business.locality,
+      postalCode: config.business.postcode,
       addressRegion: config.business.region,
       addressCountry: config.business.country
     },

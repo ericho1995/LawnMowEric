@@ -74,7 +74,7 @@ import { findHouseFootprints, prefetchFootprints, warmUpFootprints } from './foo
 
   function initMap() {
     if (map) return;
-    map = L.map(mapContainer, { center: [-37.8136, 144.9631], zoom: 13 });
+    map = L.map(mapContainer, { center: [-37.7700, 144.7750], zoom: 13 }); // starts over Deer Park and the service area
 
     if (useMapbox) {
       // satellite-streets-v12 bundles imagery + road/place labels in one layer,

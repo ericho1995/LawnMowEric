@@ -6,6 +6,18 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed — service area moved to Melbourne's west (2026-09-22)
+- Eric is based in Deer Park, so the ten suburb pages are now Deer Park,
+  St Albans, Caroline Springs, Cairnlea, Burnside, Albanvale, Ardeer,
+  Sunshine, Sunshine West and Derrimut (Brimbank and Melton), each with its
+  own local copy and FAQ. The old inner/northern pages are removed.
+- `npm run build` now deletes generated suburb pages that are no longer
+  in `src/data/suburbs.mjs`, and the "Which suburbs?" FAQ is built from
+  that list, so the area can't drift out of date.
+- Copy, the business address locality (Deer Park 3023), quote-form
+  examples and the map's starting view follow the new area; the Sydney
+  "on the roadmap" card is replaced with "More suburbs later".
+
 ### Fixed — quote form survives a relay outage (2026-09-22)
 - FormSubmit's servers went down (Cloudflare 522 / timeouts), so every
   quote fell back to "send by email instead" — the safety net worked, but

@@ -2,6 +2,12 @@
 // text is emitted as FAQPage JSON-LD on that page, so the two never drift.
 // Write answers as plain text (no HTML) — it's escaped on output.
 
+import suburbs from './suburbs.mjs';
+
+// "A, B and C" from the suburb list, so the answer never drifts from it.
+const names = suburbs.map((s) => (s.slug === 'deer-park' ? "Deer Park (where we're based)" : s.name));
+const suburbList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+
 const items = {
   cost: {
     q: 'How much does a mow cost?',
@@ -33,7 +39,7 @@ const items = {
   },
   area: {
     q: 'Which suburbs do you cover?',
-    a: "We're booking in Melbourne CBD, Richmond, Fitzroy, Carlton, Brunswick, Preston, South Yarra, St Kilda, Footscray and Camberwell. Nearby and not listed? Put your suburb on the quote form and we'll tell you straight whether we can get there."
+    a: "We're booking in " + suburbList + ". Nearby and not listed? Put your suburb on the quote form and we'll tell you straight whether we can get there."
   },
   slotGuaranteed: {
     q: 'Is the time I pick guaranteed?',
