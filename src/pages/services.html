@@ -1,6 +1,6 @@
 ---
 title: Lawn mowing services and prices — The Lawn Care
-description: Melbourne lawn mowing prices: $55–70 for small lawns, $75–95 medium, $105–140 large, or $85 a month. Edging, hedging and green waste add-ons, all confirmed before you book.
+description: Melbourne lawn mowing prices: $55–70 for small lawns, $75–95 medium, $105–140 large, or $85 a month. Plus lawn renovation (dethatch, topdress and seed) from $550, all confirmed before you book.
 nav: services
 breadcrumb: Services and prices
 schema: services
@@ -13,6 +13,7 @@ schema: services
       <a class="btn btn-primary" href="{{root}}quote.html" data-track="services_hero_quote">Get a free quote</a>
       <a class="btn btn-outline" href="#prices">See prices</a>
     </div>
+    <p class="hero-note muted">Lawn tired, thin or spongy? <a href="#renovation">See lawn renovation</a>: dethatch, topdress and seed in one visit.</p>
   </div>
 </section>
 
@@ -81,6 +82,31 @@ schema: services
         <a class="btn btn-outline btn-block" href="{{root}}quote.html?plan=subscription" data-track="services_subscription">Request the subscription</a>
       </article>
     </div>
+  </div>
+</section>
+
+<section class="section" id="renovation">
+  <div class="container split">
+    <div>
+      <h2>Lawn renovation</h2>
+      <p class="section-lead">For lawns that have gone thin, patchy or spongy. A one-off job that clears out the dead layer choking the grass and gives it fresh soil and seed to thicken up.</p>
+      <ul class="tick-list">
+        <li>Mowed down low, then dethatched with a scarifier to pull out the dead grass and runners</li>
+        <li>All the thatch raked up and taken away</li>
+        <li>Topdressed with a washed sand and soil blend, levelled to fill small dips and low spots</li>
+        <li>Overseeded to suit your grass: kikuyu, couch, rye or fescue</li>
+        <li>Starter fertiliser spread and watered in</li>
+        <li>A simple watering plan for the next three weeks, sent by message</li>
+      </ul>
+      <p class="list-foot muted">Best done between October and March, when kikuyu, couch and buffalo are growing fast. Expect the lawn to look rough for two to four weeks before it comes back thicker. Buffalo can't be grown from seed, so buffalo lawns get the dethatch, topdress and feed, and thicken from their own runners.</p>
+    </div>
+    <article class="job-sheet">
+      <h3 class="job-sheet-title">Renovation prices</h3>
+      <p class="job-sheet-note">${{config.renovation.perM2}} per m², minimum ${{config.renovation.minimum}}. Materials, seed, fertiliser and green waste removal included.</p>
+      {{renovation-table}}
+      <p class="job-sheet-foot">Deep dips needing more than 2cm of soil, and weed spraying beforehand, are quoted separately. We confirm the exact price from your lawn size before you book.</p>
+      <a class="btn btn-primary btn-block" href="{{root}}quote.html?service=renovation" data-track="services_renovation">Get a renovation quote</a>
+    </article>
   </div>
 </section>
 

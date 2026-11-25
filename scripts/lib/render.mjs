@@ -48,12 +48,28 @@ export function createRenderer({ config, faqs, suburbs }) {
       '  <tbody>\n' + rows.join('\n') + '\n  </tbody>\n</table>';
   }
 
+  // Lawn renovation: per-m² price with a minimum, shown for a few example
+  // sizes so customers can see what their lawn costs at a glance.
+  function renovationTable() {
+    const reno = config.renovation;
+    const price = (m2) => Math.max(reno.minimum, reno.perM2 * m2);
+    const rows = reno.examples.map((m2) =>
+      '    <tr><th scope="row">' + m2 + 'm² lawn</th><td>$' + price(m2).toLocaleString('en-AU') + '</td></tr>'
+    );
+    rows.push('    <tr><th scope="row">Over ' + reno.quoteAbove + 'm²</th><td>Quoted</td></tr>');
+    return '<table class="price-table">\n' +
+      '  <caption class="visually-hidden">Lawn renovation prices by lawn size</caption>\n' +
+      '  <thead><tr><th scope="col">Lawn size</th><th scope="col">Renovation</th></tr></thead>\n' +
+      '  <tbody>\n' + rows.join('\n') + '\n  </tbody>\n</table>';
+  }
+
   function render(html, root) {
     const faqsUsed = [];
     const out = html.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (whole, token) => {
       if (token === 'root') return root;
       if (token === 'suburb-links') return suburbLinks(root);
       if (token === 'price-table') return priceTable();
+      if (token === 'renovation-table') return renovationTable();
       if (token.startsWith('faq:')) {
         const set = faqs[token.slice(4)];
         if (!set) throw new Error('Unknown token ' + whole);

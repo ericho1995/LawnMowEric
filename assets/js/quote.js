@@ -36,6 +36,14 @@ function init() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('suburb')) $('q-suburb').value = params.get('suburb').slice(0, 80);
   if (params.get('plan') === 'subscription') $('q-frequency').value = 'Monthly subscription';
+  if (params.get('service') === 'renovation') {
+    $('q-reno').checked = true;
+    $('q-frequency').value = 'Lawn renovation only';
+  }
+  // A renovation-only request always includes the renovation add-on.
+  $('q-frequency').addEventListener('change', () => {
+    if ($('q-frequency').value === 'Lawn renovation only') $('q-reno').checked = true;
+  });
 
   // ---------- Booking request picker ----------
   const dates = bookableDates({ today: melbourneToday(), ...config.booking });
@@ -295,7 +303,7 @@ function init() {
       'Last mowed: ' + (data.lastMowed || 'Not sure'),
       'How often: ' + data.frequency,
       'Requested time: ' + (data.day || 'Flexible'),
-      'Add-ons: ' + ([data.addonEdging, data.addonHedge].filter(Boolean).join(', ') || 'None'),
+      'Add-ons: ' + ([data.addonEdging, data.addonHedge, data.addonReno].filter(Boolean).join(', ') || 'None'),
       'No green waste bin: ' + (data.noGreenBin ? 'Yes' : 'No'),
       'Notes: ' + (data.notes || '-')
     ];

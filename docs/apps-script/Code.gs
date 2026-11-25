@@ -47,7 +47,7 @@ const FIELDS = [
   'id', 'createdAt', 'name', 'phone', 'email', 'suburb', 'size', 'lastMowed',
   'frequency', 'day', 'addonEdging', 'addonHedge', 'noGreenBin', 'extras',
   'notes', 'areaM2', 'estimateLow', 'estimateHigh', 'status', 'depositPaid',
-  'requestedDate', 'requestedWindow', 'flexible'
+  'requestedDate', 'requestedWindow', 'flexible', 'addonReno'
 ];
 
 function getSheet_() {

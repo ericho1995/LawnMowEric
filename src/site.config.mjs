@@ -60,6 +60,16 @@ export default {
     addonRange: '$18–28'
   },
 
+  // Lawn renovation: dethatch, topdress and overseed, a one-off job priced
+  // per m² with a minimum charge. Drives the services page table, the quote
+  // form label and the schema.org offer. Lawns over quoteAbove m² are quoted.
+  renovation: {
+    perM2: 5,
+    minimum: 550,
+    quoteAbove: 400,
+    examples: [100, 200, 300]   // lawn sizes shown in the price table
+  },
+
   // Booking request picker on quote.html. Customers *request* a slot; Eric
   // confirms or counter-offers within one business day.
   booking: {

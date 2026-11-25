@@ -6,6 +6,19 @@ this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — lawn renovation service (2026-11-26)
+- New one-off service: dethatch, topdress and overseed, priced at $5/m²
+  with a $550 minimum (lawns over 400m² quoted). Pricing lives in
+  `renovation` in `src/site.config.mjs` and drives everything below.
+- Services page: a "Lawn renovation" section with what's included, best
+  timing, a price table (`{{renovation-table}}`) and two new FAQs; the
+  hero links to it. Home page add-on list gains a "New" renovation row.
+- Quote form: a renovation add-on checkbox and a "Lawn renovation only"
+  frequency option; `quote.html?service=renovation` preselects both.
+- `addonReno` is carried through the email fallback, admin view and the
+  Apps Script sheet (appended as a new column on existing sheets).
+- The services schema.org markup gains a per-m² renovation offer.
+
 ### Changed — service area moved to Melbourne's west (2026-09-22)
 - Eric is based in Deer Park, so the ten suburb pages are now Deer Park,
   St Albans, Caroline Springs, Cairnlea, Burnside, Albanvale, Ardeer,
