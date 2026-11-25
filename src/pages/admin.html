@@ -89,7 +89,7 @@ styles: admin
             <span>${escapeHtml(requestedSlot(d))}</span>
           </div>
           ${d.areaM2 ? `<div class="lead-notes">Mapped lawn area: ${escapeHtml(String(Math.round(Number(d.areaM2))))} m² · Est. ${d.estimateLow ? `$${escapeHtml(String(d.estimateLow))}–$${escapeHtml(String(d.estimateHigh))}` : 'quote on request'} per standard mow</div>` : ''}
-          ${(d.addonEdging || d.addonHedge) ? `<div class="lead-notes">Add-ons: ${[d.addonEdging, d.addonHedge].filter(Boolean).map(escapeHtml).join(', ')}</div>` : ''}
+          ${(d.addonEdging || d.addonHedge || d.addonReno) ? `<div class="lead-notes">Add-ons: ${[d.addonEdging, d.addonHedge, d.addonReno].filter(Boolean).map(escapeHtml).join(', ')}</div>` : ''}
           ${d.noGreenBin ? `<div class="lead-notes">⚠ No own green waste bin — add removal fee</div>` : ''}
           ${d.extras ? `<div class="lead-notes">Extras: ${escapeHtml(d.extras)}</div>` : ''}
           ${d.notes ? `<div class="lead-notes">"${escapeHtml(d.notes)}"</div>` : ''}

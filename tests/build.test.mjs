@@ -52,6 +52,20 @@ test('render builds the price table from config pricing bands', () => {
   assert.match(html, /150m² and up/);
 });
 
+test('render builds the renovation table from per-m² pricing with a minimum', () => {
+  const priced = createRenderer({
+    config: { renovation: { perM2: 5, minimum: 550, quoteAbove: 400, examples: [100, 200, 300] } },
+    faqs: {}, suburbs: []
+  });
+  const html = priced.render('{{renovation-table}}', '').html;
+  assert.match(html, /<table class="price-table">/);
+  // 100m² at $5 is below the minimum, so the minimum applies.
+  assert.match(html, /100m² lawn<\/th><td>\$550</);
+  assert.match(html, /200m² lawn<\/th><td>\$1,000</);
+  assert.match(html, /300m² lawn<\/th><td>\$1,500</);
+  assert.match(html, /Over 400m²<\/th><td>Quoted</);
+});
+
 test('render throws on unknown tokens and missing config keys', () => {
   assert.throws(() => r.render('{{nope}}', ''), /Unknown token/);
   assert.throws(() => r.render('{{faq:missing}}', ''), /Unknown token/);

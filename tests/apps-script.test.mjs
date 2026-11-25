@@ -141,7 +141,7 @@ test('older sheets get the new booking columns appended to the header', () => {
   const app = load({ rows: legacy });
   app.post(quote());
   const header = app.sheet().rows[0];
-  assert.deepEqual(header.slice(-3), ['requestedDate', 'requestedWindow', 'flexible']);
+  assert.deepEqual(header.slice(-4), ['requestedDate', 'requestedWindow', 'flexible', 'addonReno']);
   assert.equal(app.sheet().rows[1][header.indexOf('requestedWindow')], 'am');
 });
 

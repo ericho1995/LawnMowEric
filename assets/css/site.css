@@ -297,6 +297,7 @@ a:hover { text-decoration-thickness: 2px; }
 .page-hero-compact { padding-block: clamp(32px, 5vw, 56px); }
 .page-hero h1 { max-width: 18ch; }
 .page-hero .lede { margin-top: 18px; color: var(--text-muted); }
+.page-hero .hero-note { margin-top: 20px; font-size: 0.95rem; }
 .hero-meta { margin-top: 22px; font-size: 0.9rem; color: var(--text-muted); }
 
 .crumbs { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.875rem; margin-bottom: 18px; color: var(--text-muted); }

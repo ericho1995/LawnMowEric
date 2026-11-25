@@ -86,6 +86,19 @@ function servicesEntity(config) {
       unitText: 'month'
     }
   });
+  if (config.renovation) {
+    offers.push({
+      '@type': 'Offer',
+      name: 'Lawn renovation — dethatch, topdress and overseed',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: config.renovation.perM2,
+        minPrice: config.renovation.minimum,
+        priceCurrency: 'AUD',
+        unitText: 'square metre'
+      }
+    });
+  }
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',

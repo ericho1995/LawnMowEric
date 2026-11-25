@@ -49,6 +49,14 @@ const items = {
     q: 'How soon can you come?',
     a: "The earliest you can request is two days from today. If it's urgent, say so in the notes and we'll try to fit you in sooner."
   },
+  renoWhen: {
+    q: 'When is the best time to renovate a lawn?',
+    a: "Between October and March, while warm-season grasses like kikuyu, couch and buffalo are growing fast and can recover quickly. Rye and fescue lawns are best done in autumn or early spring. If your lawn has a lot of weeds, spray them about two weeks before the renovation so the new seed isn't competing with them."
+  },
+  renoRecovery: {
+    q: 'How long does a lawn take to recover after renovation?',
+    a: "It looks rough for the first two to four weeks while the new seed and runners come through. Keep the topdressing moist with light daily watering for the first couple of weeks (we send you a watering plan), hold off mowing until the new growth is about 5cm tall, and it comes back thicker and more even than before."
+  },
   change: {
     q: 'Can I change the day later?',
     a: 'Yes — just reply to the email we send you. Rain reschedules are always free.'
@@ -57,6 +65,6 @@ const items = {
 
 export default {
   general: [items.cost, items.home, items.pay, items.unhappy, items.area],
-  services: [items.home, items.clippings, items.rain, items.pay, items.unhappy, items.cancelSub],
+  services: [items.home, items.clippings, items.rain, items.pay, items.unhappy, items.cancelSub, items.renoWhen, items.renoRecovery],
   booking: [items.slotGuaranteed, items.howSoon, items.change, items.pay]
 };
